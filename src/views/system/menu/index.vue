@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+    <!-- <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
       <el-form-item label="菜单名称" prop="menuName">
         <el-input
           v-model="queryParams.menuName"
@@ -24,8 +24,13 @@
         <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
-    </el-form>
+    </el-form> -->
 
+    <el-tabs v-model="activeName" @tab-click="handleTabClick">
+      <el-tab-pane label="管理平台" name="pc"></el-tab-pane>
+      <el-tab-pane label="APP" name="app"></el-tab-pane>
+      <el-tab-pane label="监管平台" name="gis"></el-tab-pane>
+    </el-tabs>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -239,6 +244,8 @@ export default {
       },
       // 表单参数
       form: {},
+      // 菜单总数据
+      response: {},
       // 表单校验
       rules: {
         menuName: [
@@ -250,7 +257,9 @@ export default {
         path: [
           { required: true, message: "路由地址不能为空", trigger: "blur" }
         ]
-      }
+      },
+      // Tabs 标签页激活项
+      activeName: "pc"
     };
   },
   created() {
@@ -263,6 +272,11 @@ export default {
     });
   },
   methods: {
+    // tab选项切换
+    handleTabClick(tab) {
+      this.activeName = tab.name
+      this.setMenuList(this.response[this.activeName])
+    },
     // 选择图标
     selected(name) {
       this.form.icon = name;
@@ -271,9 +285,13 @@ export default {
     getList() {
       this.loading = true;
       listMenu(this.queryParams).then(response => {
-        this.menuList = this.handleTree(response.data, "menuId");
+        this.response = response.data
+        this.setMenuList(this.response[this.activeName])
         this.loading = false;
       });
+    },
+    setMenuList(listData) {
+      this.menuList = this.handleTree(listData, "menuId");
     },
     /** 转换菜单数据结构 */
     normalizer(node) {
