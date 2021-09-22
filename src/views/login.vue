@@ -1,11 +1,10 @@
 <template>
   <div class="login">
+    <div class="title">自动化监测项目工程管理系统</div>
     <div class="main" >
-      <img src="@/assets/logo/logo.png" alt="" class="img1">
-      <img src="@/assets/image/img_bg.png" alt="" class="img2">
-      <h3>OA系统管理</h3>
-      <h4>OA SYSTEM MANAGEMENT</h4>
+      <img src="@/assets/image/leftBackground.png" alt="" class="img2">
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
+        <img v-if="isShow" @click="handleCode" class="appCode" src="@/assets/image/appCode.png" />
         <h2 class="title">欢迎登录</h2>
         <el-form-item prop="username">
           <el-input v-model="loginForm.username" type="text" auto-complete="off"   @focus="isUsername=true"
@@ -47,7 +46,7 @@
             :loading="loading"
             size="medium"
             type="primary"
-            style="width:100%;"
+            style="width:100%;background:#09AAE9;border-color:#09AAE9;height:44px"
             @click.native.prevent="handleLogin"
           >
             <span v-if="!loading">登 录</span>
@@ -55,6 +54,10 @@
           </el-button>
         </el-form-item>
       </el-form>
+      <div class="codeBox" v-if="!isShow">
+        <img class="closeBtn" @click="handleClose" src="@/assets/image/close.png" />
+        <img class="codeImg" src="@/assets/image/download.png" />
+      </div>
     </div>
   </div>
 </template>
@@ -90,7 +93,8 @@
           code: [{ required: true, trigger: "change", message: "验证码不能为空" }]
         },
         loading: false,
-        redirect: undefined
+        redirect: undefined,
+        isShow: true,
       };
     },
     watch: {
@@ -106,6 +110,14 @@
       this.getCookie();
     },
     methods: {
+      // 二维码
+      handleCode(){
+        this.isShow=false;
+      },
+      // 关闭
+      handleClose(){
+        this.isShow=true;
+      },
       getCode() {
         getCodeImg().then(res => {
           this.codeUrl = "data:image/gif;base64," + res.img;
@@ -154,20 +166,28 @@
 <style rel="stylesheet/scss" lang="scss">
   .login {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: #0D1D30;
+    background: url('../assets/image/background.png') no-repeat;
+    background-size: 100% 100%;
     position: relative;
+    >.title{
+      width: 100%;
+      position: absolute;
+      left: 0;
+      top: 18vh;
+      font-size: 40px;
+      color: #09AAE9;
+      text-align: center;
+    }
   }
 
   .main{
     position: relative;
-    width: 940px;
-    height: 495px;
-    background:rgba(25,41,59,1);
-    border-radius:12px;
-    box-shadow:0px 2px 12px 0px rgba(9,23,39,1);
+    width: 1000px;
+    height: 452px;
     color:rgba(255,255,255,1);
     .img1{
       position:absolute;
@@ -177,10 +197,10 @@
     }
     .img2{
       position:absolute;
-      top: 63px;
-      left: 132px;
-      width: 348px;
-      height: 299px;
+      top: 0;
+      left: 0;
+      width: 600px;
+      height: 452px;
     }
     h3{
       margin-left: 52px;
@@ -198,19 +218,21 @@
       position:absolute;
       right: 0;
       top: 0;
-      border-radius: 6px;
       background: #ffffff;
-      width: 299px;
-      height: 495px;
+      width: 400px;
+      height: 452px;
       padding: 58px 33px 33px 33px;
+      .appCode{
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+      }
       .title {
-        width:85px;
-        font-size:20px;
+        font-size:32px;
         margin: 0px auto 62px auto;
-        border-bottom: 3px rgba(27,74,127,1) ridge;
         text-align: center;
-        color: #333333;
-        padding-bottom: 8px;
+        color: #09AAE9;
       }
       .el-input {
         height: 32px;
@@ -253,6 +275,23 @@
       height: 32px;
       cursor: pointer;
       vertical-align: middle;
+    }
+  }
+  .codeBox{
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 400px;
+    height: 452px;
+    background: rgba(255,255,255,.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .closeBtn{
+      position: absolute;
+      right: 0;
+      top: 0;
+      cursor: pointer;
     }
   }
 
