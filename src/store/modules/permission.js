@@ -43,7 +43,9 @@ function filterAsyncRouter(asyncRouterMap) {
     if (route.children != null && route.children && route.children.length) {
       route.children = filterAsyncRouter(route.children)
     }
-    return true
+    if (route.type === "1") {
+      return true
+    }
   })
 }
 

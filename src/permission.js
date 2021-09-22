@@ -25,7 +25,11 @@ router.beforeEach((to, from, next) => {
           const rolesList = res.user.roles
           rolesList.forEach(roleItem=>{
             if(roleItem.roleKey && roleItem.roleKey == 'admin'){
-              next({ path: '/switch-plat', param: roleItem})
+              store.dispatch('GenerateRoutes', -1).then(accessRoutes => {
+                router.addRoutes(accessRoutes)
+                next({ ...to, replace: true })
+              })
+              // next({ path: '/switch-plat', param: roleItem})
             }else{
               store.dispatch('GenerateRoutes', { roles }).then(accessRoutes => {
                 // 测试 默认静态页面
