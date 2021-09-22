@@ -22,12 +22,19 @@ router.beforeEach((to, from, next) => {
         store.dispatch('GetInfo').then(res => {
           // 拉取user_info
           const roles = res.roles
-          store.dispatch('GenerateRoutes', { roles }).then(accessRoutes => {
-          // 测试 默认静态页面
-          // store.dispatch('permission/generateRoutes', { roles }).then(accessRoutes => {
-            // 根据roles权限生成可访问的路由表
-            router.addRoutes(accessRoutes) // 动态添加可访问路由表
-            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
+          const rolesList = res.user.roles
+          rolesList.forEach(roleItem=>{
+            if(roleItem.roleKey && roleItem.roleKey == 'admin'){
+              next({ path: '/switch-plat', param: roleItem})
+            }else{
+              store.dispatch('GenerateRoutes', { roles }).then(accessRoutes => {
+                // 测试 默认静态页面
+                // store.dispatch('permission/generateRoutes', { roles }).then(accessRoutes => {
+                // 根据roles权限生成可访问的路由表
+                router.addRoutes(accessRoutes) // 动态添加可访问路由表
+                next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
+              })
+            }
           })
         })
           .catch(err => {

@@ -5,6 +5,8 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import Visualmap from '@/maps'
+import switchPlat from '@/switchPlat'
 
 /**
  * Note: 路由配置项
@@ -64,6 +66,16 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard', noCache: true, affix: true }
       }
     ]
+  },
+  {
+    path: '/maps',
+    component: Visualmap,
+    hidden: true,
+  },
+  {
+    path: '/switch-plat',
+    component: switchPlat,
+    hidden: true,
   },
   {
     path: '/user',

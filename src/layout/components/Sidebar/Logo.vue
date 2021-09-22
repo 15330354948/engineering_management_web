@@ -26,7 +26,7 @@ export default {
   },
   data() {
     return {
-      title: '若依管理系统',
+      title: '自动化监测项目工程管理平台',
       logo: logoImg
     }
   }
@@ -45,10 +45,10 @@ export default {
 
 .sidebar-logo-container {
   position: relative;
-  width: 100%;
-  height: 50px;
-  line-height: 50px;
-  background: #2b2f3a;
+  width: 520px;
+  height: 60px;
+  line-height: 60px;
+  background: transparent;
   text-align: center;
   overflow: hidden;
 
@@ -57,19 +57,21 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: auto;
+      height: 50px;
       vertical-align: middle;
-      margin-right: 12px;
+      margin-right: 2px;
     }
 
     & .sidebar-title {
       display: inline-block;
-      margin: 0;
+      font-weight: 700;
       color: #fff;
-      font-weight: 600;
+      margin: 0 0 0 10px;
+      font-size: 20px;
+      vertical-align: middle;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 20px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

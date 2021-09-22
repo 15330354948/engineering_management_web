@@ -1,24 +1,26 @@
 #app {
 
   .main-container {
-    min-height: 100%;
+    min-height: calc(100% - 60px);
     transition: margin-left .28s;
     margin-left: $sideBarWidth;
     position: relative;
+    top: 60px;
   }
 
   .sidebar-container {
     transition: width 0.28s;
     width: $sideBarWidth !important;
     background-color: $menuBg;
-    height: 100%;
+    height: calc(100% - 60px);
     position: fixed;
     font-size: 0px;
-    top: 0;
+    top: 60px;
     bottom: 0;
     left: 0;
     z-index: 1001;
     overflow: hidden;
+    box-shadow: 1px 1px 3px 2px #ccc;
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -75,6 +77,10 @@
       &:hover {
         background-color: $menuHover !important;
       }
+    }
+
+    .is-opened>.el-submenu__title{
+      background-color: $subMenuHover !important;
     }
 
     .is-active>.el-submenu__title {

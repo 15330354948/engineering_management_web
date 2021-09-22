@@ -6,7 +6,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const name = defaultSettings.title || '若依管理系统' // 标题
+const name = defaultSettings.title || '自动化监测项目工程管理平台' // 标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
 
@@ -30,11 +30,11 @@ module.exports = {
   devServer: {
     host: '0.0.0.0',
     port: port,
-    open: true,
+    open: false,
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
-        target: `http://localhost:8080`,
+        target: `http://192.168.10.222:8080`,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
