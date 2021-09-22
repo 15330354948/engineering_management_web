@@ -259,7 +259,12 @@ export default {
         ]
       },
       // Tabs 标签页激活项
-      activeName: "pc"
+      activeName: "pc",
+      activeType: {
+        "pc": 1,
+        "app": 2,
+        "gis": 3
+      }
     };
   },
   created() {
@@ -309,7 +314,7 @@ export default {
       listMenu().then(response => {
         this.menuOptions = [];
         const menu = { menuId: 0, menuName: '主类目', children: [] };
-        menu.children = this.handleTree(response.data, "menuId");
+        menu.children = this.handleTree(response.data[this.activeName], "menuId");
         this.menuOptions.push(menu);
       });
     },
@@ -384,12 +389,14 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.menuId != undefined) {
+            this.form.type = this.activeType[this.activeName]
             updateMenu(this.form).then(response => {
               this.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
+            this.form.type = this.activeType[this.activeName]
             addMenu(this.form).then(response => {
               this.msgSuccess("新增成功");
               this.open = false;
