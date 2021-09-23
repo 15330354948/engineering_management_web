@@ -92,10 +92,20 @@ export default {
 
 <style scoped>
 .pagination-container {
+  width: 100%;
+  height: 100%;
   background: #fff;
-  padding: 32px 16px;
+  margin: 0;
 }
 .pagination-container.hidden {
   display: none;
+}
+::v-deep .el-pagination {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>
