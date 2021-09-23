@@ -1,10 +1,19 @@
 'use strict'
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
+const webpack = require('webpack')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
+
+const pgearthsBuild = './node_modules/pgearth/Build'
+const pgearthsSource = './node_modules/pgearth/Source'
+const pgearthsExtends = './node_modules/pgearth/PGEarthExtends'
+const pgearthsWorkers = '../Build/Workers'
+const staticOutputDir = 'static'
+const staticpgearthsDir = staticOutputDir + '/pgearth/'
 
 const name = defaultSettings.title || '自动化监测项目工程管理平台' // 标题
 
@@ -49,7 +58,28 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    plugins: [
+      new CopyWebpackPlugin([{
+        from: path.join(pgearthsSource, pgearthsWorkers),
+        to: path.join(staticpgearthsDir, 'Workers')
+      }]),
+      new CopyWebpackPlugin([{
+        from: path.join(pgearthsBuild, 'Assets'),
+        to: path.join(staticpgearthsDir, 'Assets')
+      }]),
+      new CopyWebpackPlugin([{
+        from: path.join(pgearthsBuild, 'Widgets'),
+        to: path.join(staticpgearthsDir, 'Widgets')
+      }]),
+      new CopyWebpackPlugin([{
+        from: path.join(pgearthsBuild, 'ThirdParty/Workers'),
+        to: path.join(staticpgearthsDir, 'ThirdParty/Workers')
+      }]),
+      new webpack.DefinePlugin({
+        PGEARTH_BASE_URL: JSON.stringify(`/${staticpgearthsDir}`),
+      })
+    ]
   },
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test
