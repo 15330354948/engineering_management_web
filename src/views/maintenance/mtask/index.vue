@@ -55,7 +55,7 @@
           </el-form-item>
           <el-form-item label-width="200px" prop="mtaskResult">
             <el-select
-              v-model="mtaskForm.mtaskStatus"
+              v-model="mtaskForm.mtaskResult"
               placeholder="请选择结果"
             >
               <el-option
@@ -135,7 +135,6 @@ export default {
         planningDate: "",
         // 实际完成时间
         finishDate: "",
-        dateInfo: "",
         // 状态
         mtaskStatus: "",
         // 结果
