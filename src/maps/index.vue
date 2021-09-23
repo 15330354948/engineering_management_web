@@ -1,5 +1,5 @@
 <template>
-   <el-container>
+   <el-container class="main-map-container">
      <div class="main-map">
       <!-- gis地图 -->
       <baseMap />
@@ -26,10 +26,13 @@ export default {
 }
 </script>
 <style lang='scss' scoped>
-.main-map {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+.main-map-container {
+  height: 100vh;
+  .main-map {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
 }
 </style>
