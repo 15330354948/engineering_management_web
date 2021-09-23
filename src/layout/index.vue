@@ -111,11 +111,11 @@ export default {
         });
       });
     },
-    changePlatform() {
-      this.$router.push({ path: "/switch-plat" });
-    },
-  },
-};
+    changePlatform(){
+      this.$router.push('/switch-plat')
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
