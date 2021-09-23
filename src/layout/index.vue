@@ -109,7 +109,7 @@ export default {
       })
     },
     changePlatform(){
-
+      this.$router.push('/switch-plat')
     }
   }
 }
