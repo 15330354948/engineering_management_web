@@ -37,7 +37,6 @@
         <el-form-item label="任务" prop="task" v-model="mtaskEditForm.task">
            <el-table
             :data="tableData"
-            border
             highlight-current-row
             style="width: 100%;">
             <el-table-column
@@ -69,7 +68,6 @@
             </el-table-column>
            <el-table-column
             label="操作"
-            fixed="right"
             >
             <template slot-scope="scope">
               <el-button :disabled="subproDisabled" @click="addRow(scope.row)" type="text" icon="el-icon-plus">新增</el-button>
