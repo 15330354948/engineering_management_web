@@ -303,7 +303,7 @@ export default {
     margin-left: 120px !important;
   }
   ::v-deep .el-form-item {
-    flex: 1;
+    width: 100%;
   }
   ::v-deep .el-input__inner {
     width: 100%;
