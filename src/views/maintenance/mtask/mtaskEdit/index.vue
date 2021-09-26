@@ -34,7 +34,7 @@
       </div>
       
       <div class="each-line">
-        <el-form-item label="任务" prop="task">
+        <el-form-item label="任务" prop="task" v-model="mtaskEditForm.task">
            <el-table
             :data="tableData"
             border
@@ -203,6 +203,11 @@ export default {
     this.$bus
     .$off(`dosave`)
     .$on(`dosave`, () => {
+      for(let key in this.mtaskEditForm) {
+        if(key.startsWith('subProject')) {
+          this.mtaskEditForm.task = true
+        }
+      }
       this.$refs['mtaskEditForm'].validate((valid) => {
         if (valid) {
           this.formInvalid = true
