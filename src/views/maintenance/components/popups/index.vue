@@ -56,10 +56,8 @@
       },
       // 通知父组件保存情况
       feedback() {
+        this.$bus.$emit('dosave')
         this.$emit('dosave')
-        setTimeout(() => {
-          this.$emit('dclose')
-        }, 0);
       }
     }
   }

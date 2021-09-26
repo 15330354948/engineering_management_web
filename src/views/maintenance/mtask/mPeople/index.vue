@@ -33,6 +33,20 @@
 <script>
   export default {
     name: "mPeople",
+    created() {
+      this.$bus
+      .$off(`dosave`)
+      .$on(`dosave`, () => {
+        this.$refs['mPeopleForm'].validate((valid) => {
+          if (valid) {
+            this.formInvalid = true
+          } else {
+            this.formInvalid = false
+            return false;
+          }
+        });
+      });
+    },
     data() {
       return {
         // 人员表单
@@ -44,6 +58,8 @@
           // 维护人员
           maintPersonnel: ""
         },
+        // 表单符合规则
+        formInvalid: true,
         rules: {
           approvers: [
             { required: true, message: '请选择审核人员', trigger: 'change' }

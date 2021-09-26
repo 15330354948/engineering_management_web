@@ -199,6 +199,20 @@ export default {
     // 初始化数据
     this.initData()
   },
+  created() {
+    this.$bus
+    .$off(`dosave`)
+    .$on(`dosave`, () => {
+      this.$refs['mtaskEditForm'].validate((valid) => {
+        if (valid) {
+          this.formInvalid = true
+        } else {
+          this.formInvalid = false
+          return false;
+        }
+      });
+    });
+  },
   watch: {
     taskTableForm: {
       handler(val) {
@@ -209,6 +223,8 @@ export default {
   },
   data() {
     return {
+      // 表单是否符合要求
+      formInvalid: true,
       // 禁用列表
       disableList: {},
       // 子项目及禁用状态
@@ -258,7 +274,7 @@ export default {
           { required: true, message: '请选择维护单位', trigger: 'change' }
         ],
         task: [
-          { required: true, trigger: 'blur' }
+          { required: true, message: '请选择对应任务', trigger: 'blur' }
         ]
       }
     }

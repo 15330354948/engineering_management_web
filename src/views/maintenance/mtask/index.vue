@@ -294,8 +294,14 @@ export default {
     },
     // 提交数据
     saveInfo() {
-      let formVal = this.$refs[Object.entries(this.slotStatus)[0][0]][Object.entries(this.slotStatus)[0][0]+'Form']
-      console.log(formVal)
+      // 对应的表单数据
+      let whichOne = Object.entries(this.slotStatus)[0][0]
+      let ref = this.$refs[whichOne]
+      let formVal = this.$refs[whichOne][whichOne+'Form']
+      if(ref.formInvalid) {
+        // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
+        this.handleDialogClose()
+      }
     }
   },
   created() {
