@@ -39,7 +39,7 @@
             :data="tableData"
             border
             highlight-current-row
-            style="width: 100%;">
+            style="width: 100%">
             <el-table-column
               type="index"
               label="序号"
@@ -69,7 +69,6 @@
             </el-table-column>
            <el-table-column
             label="操作"
-            fixed="right"
             >
             <template slot-scope="scope">
               <el-button :disabled="subproDisabled" @click="addRow(scope.row)" type="text" icon="el-icon-plus">新增</el-button>
@@ -304,7 +303,7 @@ export default {
     margin-left: 120px !important;
   }
   ::v-deep .el-form-item {
-    flex: 1;
+    width: 100%;
   }
   ::v-deep .el-input__inner {
     width: 100%;
