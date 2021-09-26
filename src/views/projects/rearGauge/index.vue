@@ -102,6 +102,7 @@
           <el-form-item label="位置" prop="rearGaugeName">
             <el-col :span="12" style="padding-right:5px">
               <el-cascader
+                v-model="form.rearGaugeName"
                 :options="options"
                 clearable>
               </el-cascader>
@@ -190,27 +191,27 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="勘察单位">
-            <el-cascader :options="options" clearable :show-all-levels="false"></el-cascader>
+            <el-cascader v-model="form.rearGaugeName" :options="options" clearable :show-all-levels="false"></el-cascader>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="设计单位">
-            <el-cascader :options="options" clearable :show-all-levels="false"></el-cascader>
+            <el-cascader v-model="form.rearGaugeName" :options="options" clearable :show-all-levels="false"></el-cascader>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="施工单位">
-            <el-cascader :options="options" clearable :show-all-levels="false"></el-cascader>
+            <el-cascader v-model="form.rearGaugeName" :options="options" clearable :show-all-levels="false"></el-cascader>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="监理单位">
-            <el-cascader :options="options" clearable :show-all-levels="false"></el-cascader>
+            <el-cascader v-model="form.rearGaugeName" :options="options" clearable :show-all-levels="false"></el-cascader>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="监测单位">
-            <el-cascader :options="options" clearable :show-all-levels="false"></el-cascader>
+            <el-cascader v-model="form.rearGaugeName" :options="options" clearable :show-all-levels="false"></el-cascader>
           </el-form-item>
         </el-col>
         <el-col :span="12">
