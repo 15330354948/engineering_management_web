@@ -16,9 +16,21 @@ import permission from './directive/permission'
 
 import './assets/icons' // icon
 import './permission' // permission control
-import { getDicts } from "@/api/system/dict/data";
-import { getConfigKey } from "@/api/system/config";
-import { parseTime, resetForm, addDateRange, selectDictLabel, selectDictLabels, download, handleTree } from "@/utils/ruoyi";
+import {
+  getDicts
+} from "@/api/system/dict/data";
+import {
+  getConfigKey
+} from "@/api/system/config";
+import {
+  parseTime,
+  resetForm,
+  addDateRange,
+  selectDictLabel,
+  selectDictLabels,
+  download,
+  handleTree
+} from "@/utils/ruoyi";
 import Pagination from "@/components/Pagination";
 //自定义表格工具扩展
 import RightToolbar from "@/components/RightToolbar"
@@ -36,11 +48,19 @@ Vue.prototype.$bus = new Vue()
 Vue.prototype.handleTree = handleTree
 
 Vue.prototype.msgSuccess = function (msg) {
-  this.$message({ showClose: true, message: msg, type: "success" });
+  this.$message({
+    showClose: true,
+    message: msg,
+    type: "success"
+  });
 }
 
 Vue.prototype.msgError = function (msg) {
-  this.$message({ showClose: true, message: msg, type: "error" });
+  this.$message({
+    showClose: true,
+    message: msg,
+    type: "error"
+  });
 }
 
 Vue.prototype.msgInfo = function (msg) {
@@ -67,6 +87,38 @@ Vue.use(Element, {
 })
 
 Vue.config.productionTip = false
+
+// select默认项不可删除操作
+Vue.directive('defaultSelect', {
+  componentUpdated(el, bindings, vnode) {
+    const [values, options, prop, defaultProp, defaultValue] = bindings.value
+    // 需要隐藏的标签索引
+    const indexs = []
+    const tempData = values.map(a => options.find(op => op[prop] === a))
+    tempData.forEach((a, index) => {
+      if (a[defaultProp] === defaultValue) indexs.push(index)
+    })
+    const dealStyle = function (tags) {
+      tags.forEach((el, index) => {
+        if (indexs.includes(index) && ![...el.classList].includes('select-tag-close-none')) {
+          el.classList.add('none')
+        }
+      })
+    }
+    // 设置样式 隐藏close icon
+    const tags = el.querySelectorAll('.el-tag__close')
+    if (tags.length === 0) {
+      // 初始化tags为空处理
+      setTimeout(() => {
+        const tagTemp = el.querySelectorAll('.el-tag__close')
+        dealStyle(tagTemp)
+      })
+    } else {
+      dealStyle(tags)
+    }
+  }
+})
+
 
 new Vue({
   el: '#app',

@@ -2,30 +2,8 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item prop="ProjectCode">
-        <el-input v-model="queryParams.ProjectCode" placeholder="请输入项目编号/名称" clearable size="small"
+        <el-input v-model="queryParams.ProcedureName" placeholder="请输入工序名称" clearable size="small"
           @keyup.enter.native="handleQuery" />
-      </el-form-item>
-      <el-form-item prop="area"  placeholder="请选择区域">
-        <el-cascader v-model="queryParams.area" :options="areaOptions" clearable>
-        </el-cascader>
-      </el-form-item>
-      <el-form-item prop="createPeriod">
-        <el-select v-model="queryParams.createPeriod" placeholder="请选择创建期次" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
-            :value="dict.dictValue" />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="section">
-        <el-select v-model="queryParams.section" placeholder="请选择所属标段" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
-            :value="dict.dictValue" />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="projectStatus">
-        <el-select v-model="queryParams.projectStatus" placeholder="请选择项目状态" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
-            :value="dict.dictValue" />
-        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -38,16 +16,18 @@
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAdd"
           v-hasPermi="['project:Project:add']">新增</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleImport" v-hasPermi="['project:Project:import']">导入
-        </el-button>
-      </el-col>
+      <!-- <el-col :span="1.5">
+        <el-button
+          type="success"
+          icon="el-icon-edit"
+          size="mini"
+          :disabled="single"
+          @click="handleUpdate"
+          v-hasPermi="['project:Project:edit']"
+        >修改</el-button>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="primary" size="mini" @click="handleExport" v-hasPermi="['project:Project:export']">导出
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleChild" v-hasPermi="['project:Project:export']">子项查询
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -59,24 +39,18 @@
 
     <el-table v-loading="loading" :data="ProjectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="项目编号" align="center" prop="ProjectId" />
-      <el-table-column label="项目名称" align="center" prop="ProjectCode" />
-      <el-table-column label="项目地址" align="center" prop="ProjectName" />
-      <el-table-column label="建设期次" align="center" prop="ProjectSort" />
-      <el-table-column label="所属标段" align="center" prop="ProjectSort" />
-      <el-table-column label="项目状态" align="center" prop="status" :formatter="statusFormat" />
+      <el-table-column label="后规划项目名称" align="center" prop="ProjectId" />
+      <el-table-column label="工序数" align="center" prop="ProjectCode" />
+      <el-table-column label="备注" align="center" prop="ProjectName" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-s-tools" @click="handleDistribution(scope.row)"
-            v-hasPermi="['project:Project:edit']">分配</el-button>
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
             v-hasPermi="['project:Project:edit']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-info" @click="handleDetail(scope.row)"
-            v-hasPermi="['project:Project:edit']">详情</el-button>
-          <el-button size="mini" type="text" icon="el-icon-bottom" @click="handleDownload(scope.row)"
-            v-hasPermi="['project:Project:edit']">下载</el-button>
+
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
             v-hasPermi="['project:Project:remove']">删除</el-button>
+          <el-button size="mini" type="text" icon="el-icon-document-copy" @click="handleDownload(scope.row)"
+            v-hasPermi="['project:Project:edit']">备注</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -84,16 +58,7 @@
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getList" />
 
-    <!-- 添加项目对话框 -->
-    <el-dialog :title="title" :visible.sync="addOpen" width="70%" append-to-body :before-close="handleClose">
-      <addForm @closeDialog="closeDialog" ref="child"></addForm>
-    </el-dialog>
-
-    <!-- 子项查询对话框 -->
-    <el-dialog :title="title" :visible.sync="childOpen" width="70%" append-to-body>
-      <childQuery></childQuery>
-    </el-dialog>
-
+    <!-- 添加或修改项目对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="项目名称" prop="ProjectName">
@@ -109,7 +74,6 @@
           <el-radio-group v-model="form.status">
             <el-radio v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictValue">{{dict.dictLabel}}
             </el-radio>
-            <el-input v-model="form.ProjectCode2" placeholder="请输入编码名称" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -133,15 +97,9 @@
     updateProject,
     exportProject
   } from "@/api/projects/project";
-  import addForm from "./addForm.vue"
-  import childQuery from './childQuery.vue'
 
   export default {
     name: "Project",
-    components: {
-      addForm,
-      childQuery
-    },
     data() {
       return {
         // 遮罩层
@@ -162,23 +120,13 @@
         title: "",
         // 是否显示弹出层
         open: false,
-        // 新增弹出层
-        addOpen: false,
-        // 子项查询弹出层
-        childOpen:false,
         // 状态数据字典
         statusOptions: [],
-        // 区域
-        areaOptions: [],
         // 查询参数
         queryParams: {
           pageNum: 1,
           pageSize: 10,
-          ProjectCode: undefined,
-          area:undefined,
-          createPeriod: undefined,
-          section: undefined,
-          projectStatus: undefined
+          ProcedureName: undefined
         },
         // 表单参数
         form: {},
@@ -200,7 +148,201 @@
             trigger: "blur"
           }]
         },
-        
+        options: [{
+          value: 'zhinan',
+          label: '指南',
+          children: [{
+            value: 'shejiyuanze',
+            label: '设计原则',
+            children: [{
+              value: 'yizhi',
+              label: '一致'
+            }, {
+              value: 'fankui',
+              label: '反馈'
+            }, {
+              value: 'xiaolv',
+              label: '效率'
+            }, {
+              value: 'kekong',
+              label: '可控'
+            }]
+          }, {
+            value: 'daohang',
+            label: '导航',
+            children: [{
+              value: 'cexiangdaohang',
+              label: '侧向导航'
+            }, {
+              value: 'dingbudaohang',
+              label: '顶部导航'
+            }]
+          }]
+        }, {
+          value: 'zujian',
+          label: '组件',
+          children: [{
+            value: 'basic',
+            label: 'Basic',
+            children: [{
+              value: 'layout',
+              label: 'Layout 布局'
+            }, {
+              value: 'color',
+              label: 'Color 色彩'
+            }, {
+              value: 'typography',
+              label: 'Typography 字体'
+            }, {
+              value: 'icon',
+              label: 'Icon 图标'
+            }, {
+              value: 'button',
+              label: 'Button 按钮'
+            }]
+          }, {
+            value: 'form',
+            label: 'Form',
+            children: [{
+              value: 'radio',
+              label: 'Radio 单选框'
+            }, {
+              value: 'checkbox',
+              label: 'Checkbox 多选框'
+            }, {
+              value: 'input',
+              label: 'Input 输入框'
+            }, {
+              value: 'input-number',
+              label: 'InputNumber 计数器'
+            }, {
+              value: 'select',
+              label: 'Select 选择器'
+            }, {
+              value: 'cascader',
+              label: 'Cascader 级联选择器'
+            }, {
+              value: 'switch',
+              label: 'Switch 开关'
+            }, {
+              value: 'slider',
+              label: 'Slider 滑块'
+            }, {
+              value: 'time-picker',
+              label: 'TimePicker 时间选择器'
+            }, {
+              value: 'date-picker',
+              label: 'DatePicker 日期选择器'
+            }, {
+              value: 'datetime-picker',
+              label: 'DateTimePicker 日期时间选择器'
+            }, {
+              value: 'upload',
+              label: 'Upload 上传'
+            }, {
+              value: 'rate',
+              label: 'Rate 评分'
+            }, {
+              value: 'form',
+              label: 'Form 表单'
+            }]
+          }, {
+            value: 'data',
+            label: 'Data',
+            children: [{
+              value: 'table',
+              label: 'Table 表格'
+            }, {
+              value: 'tag',
+              label: 'Tag 标签'
+            }, {
+              value: 'progress',
+              label: 'Progress 进度条'
+            }, {
+              value: 'tree',
+              label: 'Tree 树形控件'
+            }, {
+              value: 'pagination',
+              label: 'Pagination 分页'
+            }, {
+              value: 'badge',
+              label: 'Badge 标记'
+            }]
+          }, {
+            value: 'notice',
+            label: 'Notice',
+            children: [{
+              value: 'alert',
+              label: 'Alert 警告'
+            }, {
+              value: 'loading',
+              label: 'Loading 加载'
+            }, {
+              value: 'message',
+              label: 'Message 消息提示'
+            }, {
+              value: 'message-box',
+              label: 'MessageBox 弹框'
+            }, {
+              value: 'notification',
+              label: 'Notification 通知'
+            }]
+          }, {
+            value: 'navigation',
+            label: 'Navigation',
+            children: [{
+              value: 'menu',
+              label: 'NavMenu 导航菜单'
+            }, {
+              value: 'tabs',
+              label: 'Tabs 标签页'
+            }, {
+              value: 'breadcrumb',
+              label: 'Breadcrumb 面包屑'
+            }, {
+              value: 'dropdown',
+              label: 'Dropdown 下拉菜单'
+            }, {
+              value: 'steps',
+              label: 'Steps 步骤条'
+            }]
+          }, {
+            value: 'others',
+            label: 'Others',
+            children: [{
+              value: 'dialog',
+              label: 'Dialog 对话框'
+            }, {
+              value: 'tooltip',
+              label: 'Tooltip 文字提示'
+            }, {
+              value: 'popover',
+              label: 'Popover 弹出框'
+            }, {
+              value: 'card',
+              label: 'Card 卡片'
+            }, {
+              value: 'carousel',
+              label: 'Carousel 走马灯'
+            }, {
+              value: 'collapse',
+              label: 'Collapse 折叠面板'
+            }]
+          }]
+        }, {
+          value: 'ziyuan',
+          label: '资源',
+          children: [{
+            value: 'axure',
+            label: 'Axure Components'
+          }, {
+            value: 'sketch',
+            label: 'Sketch Templates'
+          }, {
+            value: 'jiaohu',
+            label: '组件交互文档'
+          }]
+        }]
       };
     },
     created() {
@@ -214,6 +356,7 @@
       getList() {
         this.loading = true;
         listProject(this.queryParams).then(response => {
+          console.log(response);
           this.ProjectList = response.rows;
           this.total = response.total;
           this.loading = false;
@@ -226,8 +369,6 @@
       // 取消按钮
       cancel() {
         this.open = false;
-        this.addOpen = false;
-        // this.childOpen = false;
         this.reset();
       },
       // 表单重置
@@ -241,14 +382,6 @@
           remark: undefined
         };
         this.resetForm("form");
-      },
-      //   关闭新增弹框
-      closeDialog() {
-        this.addOpen = false
-      },
-      handleClose() {
-        this.$refs.child.reset();
-        this.closeDialog();
       },
       /** 搜索按钮操作 */
       handleQuery() {
@@ -269,7 +402,7 @@
       /** 新增按钮操作 */
       handleAdd() {
         this.reset();
-        this.addOpen = true;
+        this.open = true;
         this.title = "添加项目";
       },
       /** 修改按钮操作 */
@@ -289,11 +422,7 @@
       // 详情按钮操作
       handleDetail() {},
       // 子项查询
-      handleChild() {
-        this.reset();
-        this.childOpen = true;
-        this.title = "子项列表";
-      },
+      handleChild() {},
       /** 提交按钮 */
       submitForm: function () {
         this.$refs["form"].validate(valid => {
