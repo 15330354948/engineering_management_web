@@ -95,7 +95,7 @@ export default {
   width: 100%;
   height: 100%;
   background: #fff;
-  margin: 0;
+  margin-top: 25px;
 }
 .pagination-container.hidden {
   display: none;
