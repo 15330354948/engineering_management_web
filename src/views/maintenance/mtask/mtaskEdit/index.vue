@@ -37,8 +37,9 @@
         <el-form-item label="任务" prop="task" v-model="mtaskEditForm.task">
            <el-table
             :data="tableData"
+            border
             highlight-current-row
-            style="width: 100%;">
+            style="width: 100%">
             <el-table-column
               type="index"
               label="序号"
