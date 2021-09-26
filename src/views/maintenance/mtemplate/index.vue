@@ -203,7 +203,14 @@ export default {
     this.$bus
       .$off(`${this.pageSign}DeleteClick`)
       .$on(`${this.pageSign}DeleteClick`, () => {
-        this.handleDelete({selectedItem: this.selectedItem}, this.selectedItem)
+        if(this.selectedItem.length>0) {
+          this.handleDelete({selectedItem: this.selectedItem}, this.selectedItem)
+        }else{
+          this.$message({
+            message: '请勾选数据',
+            type: 'warning'
+          });
+        }
       });
   },
 };

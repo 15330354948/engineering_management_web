@@ -2,8 +2,8 @@
   <div class="mtask-container">
     <!-- 弹窗组件 -->
     <Popups @dosave="saveInfo" @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
-      <mtaskEdit ref="mtaskEdit" :taskTableForm="taskTableForm" v-if="slotStatus.mtaskEditShow"></mtaskEdit>
-      <mPeople ref="mPeople" v-if="slotStatus.mPeopleShow"></mPeople>
+      <mtaskEdit ref="mtaskEdit" :taskTableForm="taskTableForm" v-if="slotStatus.mtaskEdit"></mtaskEdit>
+      <mPeople ref="mPeople" v-if="slotStatus.mPeople"></mPeople>
     </Popups>
     <!-- 顶部搜索 -->
     <div class="mtask-header-container">
@@ -219,8 +219,8 @@ export default {
       selectedItem: [],
       // 插槽组件管理
       slotStatus: {
-        mtaskEditShow: false,
-        mPeopleShow: false
+        mtaskEdit: false,
+        mPeople: false
       },
       // 修改时传入，创建时清楚
       taskTableForm: {}
@@ -240,8 +240,9 @@ export default {
     handleMPerson(row) {
       console.log("这一行内容的信息", row)
       this.slotStatus = {
-        mPeopleShow: true
+        mPeople: true
       }
+      console.log(this.slotStatus)
       this.dialogInfo = {
         dialogShow: true,
         dialogTitle: "维护人员分配",
@@ -258,7 +259,7 @@ export default {
         subProject3: "shanghai"
       }
       this.slotStatus = {
-        mtaskEditShow: true
+        mtaskEdit: true
       }
       this.dialogInfo = {
         dialogShow: true,
@@ -293,8 +294,8 @@ export default {
     },
     // 提交数据
     saveInfo() {
-      const taskForm = this.$refs.mtaskEdit.taskForm
-      console.log("提交的表单为", taskForm)
+      let formVal = this.$refs[Object.entries(this.slotStatus)[0][0]][Object.entries(this.slotStatus)[0][0]+'Form']
+      console.log(formVal)
     }
   },
   created() {
@@ -317,7 +318,7 @@ export default {
         // 清除传入
         this.taskTableForm = {}
         this.slotStatus = {
-          mtaskEditShow: true
+          mtaskEdit: true
         }
         this.dialogInfo = {
           dialogShow: true,
@@ -335,6 +336,11 @@ export default {
       .$on(`${this.pageSign}DeleteClick`, () => {
         if(this.selectedItem.length>0) {
           this.handleDelete({selectedItem: this.selectedItem}, this.selectedItem)
+        }else{
+          this.$message({
+            message: '请勾选数据',
+            type: 'warning'
+          });
         }
       });
   },

@@ -1,17 +1,17 @@
 <template>
-  <div class="mtaskedit-container">
+  <div class="mtaskEditForm-container">
     <el-form
-      :model="taskForm"
+      :model="mtaskEditForm"
       :rules="rules"
-      ref="taskForm"
+      ref="mtaskEditForm"
       label-width="100px"
     >
       <div class="each-line">
         <el-form-item label="维护任务名称" prop="taskName">
-          <el-input autosize placeholder="请输入维护任务名称" v-model="taskForm.taskName"></el-input>
+          <el-input autosize placeholder="请输入维护任务名称" v-model="mtaskEditForm.taskName"></el-input>
         </el-form-item>
         <el-form-item label="项目名称" prop="projectName">
-          <el-select clearable @change="handleProjectSelect" v-model="taskForm.projectName" placeholder="请选择项目">
+          <el-select clearable @change="handleProjectSelect" v-model="mtaskEditForm.projectName" placeholder="请选择项目">
             <el-option label="项目一" value="shanghai"></el-option>
             <el-option label="项目二" value="beijing"></el-option>
           </el-select>
@@ -20,13 +20,13 @@
       <div class="each-line">
         <el-form-item label="计划完成日期" prop="acceptanceTm">
           <el-date-picker
-            v-model="taskForm.acceptanceTm"
+            v-model="mtaskEditForm.acceptanceTm"
             type="date"
             placeholder="请选择验收时间">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="维护单位" prop="maintUnit">
-          <el-select clearable v-model="taskForm.maintUnit" placeholder="请选择维护单位">
+          <el-select clearable v-model="mtaskEditForm.maintUnit" placeholder="请选择维护单位">
             <el-option label="单位一" value="shanghai"></el-option>
             <el-option label="单位二" value="beijing"></el-option>
           </el-select>
@@ -50,7 +50,7 @@
               width="350">
               <template slot-scope="scope">
                 <!-- 通过index来区分每个块的数据 -->
-                <el-select @change="handleSubProjectSelect($event, scope.row)" clearable :disabled="subproDisabled" v-model="taskForm['subProject'+scope.row.index]" placeholder="请选择子项目">
+                <el-select @change="handleSubProjectSelect($event, scope.row)" clearable :disabled="subproDisabled" v-model="mtaskEditForm['subProject'+scope.row.index]" placeholder="请选择子项目">
                   <el-option label="子项目1" value="shanghai"></el-option>
                   <el-option label="子项目2" value="beijing"></el-option>
                 </el-select>
@@ -61,7 +61,7 @@
               width="350">
                <template slot-scope="scope">
                 <!-- 通过index来区分每个块的数据，以及是否禁用的控制 -->
-                <el-select @change="handleMptSelect($event, scope.row)" clearable :disabled="!disableList[scope.row.index]" v-model="taskForm['mPt'+scope.row.index]" placeholder="请选择测点">
+                <el-select @change="handleMptSelect($event, scope.row)" clearable :disabled="!disableList[scope.row.index]" v-model="mtaskEditForm['mPt'+scope.row.index]" placeholder="请选择测点">
                   <el-option label="测点1" value="shanghai"></el-option>
                   <el-option label="测点2" value="beijing"></el-option>
                 </el-select>
@@ -80,7 +80,7 @@
         </el-form-item>
       </div>
       <el-form-item label="备注" prop="remark">
-        <el-input type="textarea" v-model="taskForm.remark"></el-input>
+        <el-input type="textarea" v-model="mtaskEditForm.remark"></el-input>
       </el-form-item>
     </el-form>
   </div>
@@ -88,7 +88,7 @@
 
 <script>
 export default {
-  name: "mtaskEdit",
+  name: "mtaskEditForm",
   methods: {
     // 项目选择
     handleProjectSelect(e) {
@@ -98,7 +98,7 @@ export default {
       } else {
         this.subproDisabled = true
         this.tableData.length = 1
-        this.taskForm = {}
+        this.mtaskEditForm = {}
         this.disableList = {}
       }
     },
@@ -116,7 +116,7 @@ export default {
     // 测点选中
     handleMptSelect(e,row) {
       if (e !== '') {
-        this.taskForm['mPt' + row.index] = e
+        this.mtaskEditForm['mPt' + row.index] = e
       } else {
         
       }
@@ -141,8 +141,8 @@ export default {
       })
       // 处理禁用权限
       delete this.disableList[row.index]
-      delete this.taskForm['mPt'+row.index]
-      delete this.taskForm['subProject'+row.index]
+      delete this.mtaskEditForm['mPt'+row.index]
+      delete this.mtaskEditForm['subProject'+row.index]
       for(let key in this.disableList) {
         if ((key * 1) > row.index) {
           this.disableList[key-1] = this.disableList[key]
@@ -158,27 +158,27 @@ export default {
     objectDeal(sign, row) {
       // 定义超过index值的list
       const signList = []
-      delete this.taskForm[sign + row.index]
-      let taskFormLength = 0
-      for(let key in this.taskForm) {
+      delete this.mtaskEditForm[sign + row.index]
+      let mtaskEditFormLength = 0
+      for(let key in this.mtaskEditForm) {
         if(key.startsWith(sign)) {
-          taskFormLength += 1
+          mtaskEditFormLength += 1
           let newKey = key.split(sign)
           if(newKey[1]*1 > row.index) {
             signList.push(newKey[1]*1)
-            this.taskForm[sign + (newKey[1]*1 - 1)] = this.taskForm[sign + (newKey[1]*1)]
+            this.mtaskEditForm[sign + (newKey[1]*1 - 1)] = this.mtaskEditForm[sign + (newKey[1]*1)]
           }
         }
       }
       if(signList.length > 0) {
         let deleteOne = sign + signList.sort((a,b) => b-a)[0]
-        delete this.taskForm[deleteOne]
+        delete this.mtaskEditForm[deleteOne]
       }
     },
     // 初始化数据
     initData() {
       let index = 1
-      for(let key in this.taskForm) {
+      for(let key in this.mtaskEditForm) {
         if(key.startsWith('subProject')) {
           this.subproDisabled = false
           if(index !== 1) {
@@ -202,7 +202,7 @@ export default {
   watch: {
     taskTableForm: {
       handler(val) {
-        this.taskForm = val
+        this.mtaskEditForm = val
       },
       immediate: true
     }
@@ -220,7 +220,7 @@ export default {
         {index:1}
       ],
       // 组件内部变量
-      taskForm: {
+      mtaskEditForm: {
         // 任务名称
         taskName: "",
         // 项目名称
@@ -267,7 +267,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.mtaskedit-container {
+.mtaskEditForm-container {
   width: 100%;
   height: 100%;
   .each-line {
