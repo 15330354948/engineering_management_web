@@ -1,5 +1,9 @@
 <template>
   <div class="mtemplate-container">
+    <!-- 弹窗组件 -->
+    <Popups @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
+      
+    </Popups>
     <!-- 顶部搜索 -->
     <div class="mtemplate-header-container">
       <div class="search-panel">
@@ -46,9 +50,9 @@
           label="操作"
           >
           <template slot-scope="scope">
-            <el-button @click="handleClick(scope.row)" type="text" icon="el-icon-edit">修改</el-button>
-            <el-button type="text" icon="el-icon-delete">删除</el-button>
-            <el-button type="text" icon="el-icon-document-copy">复制</el-button>
+            <el-button @click="handleMEdit(scope.row)" type="text" icon="el-icon-edit">修改</el-button>
+            <el-button @click="handleMDelete(scope.row)" type="text" icon="el-icon-delete">删除</el-button>
+            <el-button @click="handleMCopy(scope.row)" type="text" icon="el-icon-document-copy">复制</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -64,10 +68,12 @@
 
 <script>
 import TableSearch from "@/components/TableSearch";
+import Popups from "../components/popups/index.vue"
 export default {
   name: "MTemplate",
   components: {
     TableSearch,
+    Popups
   },
   data() {
     return {
@@ -102,12 +108,69 @@ export default {
       ],
       // 表格当前选中项
       selectedItem: [],
+      // 弹窗相关
+      dialogInfo: {
+        // dialog 标题
+        dialogTitle: "",
+        // dialog 显示隐藏
+        dialogShow: false,
+        // dialog 宽度
+        dialogWidth: ""
+      },
     };
   },
   methods: {
+    // 多选处理
     handleSelectionChange(selection) {
       this.selectedItem = selection;
     },
+    // 弹窗关闭处理
+    handleDialogClose() {
+      this.dialogInfo.dialogShow = false
+      this.slotStatus = {}
+    },
+    // 通用删除
+    handleDelete(config=undefined, data) {
+      let hint
+      if(config) {
+        hint = `确认删除已选中的 ${config.selectedItem.length} 条数据?`
+      } else {
+        hint = "确认删除当前这条数据?"
+      }
+      this.$confirm(hint, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        // 执行删除逻辑
+        console.log("要删除的信息", data)
+        this.tableData = []
+      }).catch(() => {
+        console.log("取消删除")
+      });
+    },
+    // 修改
+    handleMEdit(row) {
+      console.log("这一行内容的信息", row)
+      this.dialogInfo = {
+        dialogShow: true,
+        dialogTitle: "维护模板修改",
+        dialogWidth: "45%"
+      }
+    },
+    // 删除
+    handleMDelete(row) {
+      console.log("这一行的信息", row)
+      this.handleDelete(undefined, row) 
+    },
+    // 复制
+    handleMCopy(row) {
+      this.dialogInfo = {
+        dialogShow: true,
+        dialogTitle: "维护模板复制",
+        dialogWidth: "20%"
+      }
+    }
   },
   created() {
     this.$bus
@@ -126,6 +189,11 @@ export default {
       .$off(`${this.pageSign}CreateClick`)
       .$on(`${this.pageSign}CreateClick`, () => {
         console.log("已监听到创建");
+        this.dialogInfo = {
+          dialogShow: true,
+          dialogTitle: "维护模板新增",
+          dialogWidth: "45%"
+        }
       });
     this.$bus
       .$off(`${this.pageSign}ExportClick`)
@@ -135,16 +203,7 @@ export default {
     this.$bus
       .$off(`${this.pageSign}DeleteClick`)
       .$on(`${this.pageSign}DeleteClick`, () => {
-        if(this.selectedItem.length>0) {
-            this.$confirm(`确认删除已选中的 ${this.selectedItem.length} 条数据?`, "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning",
-          }).then(() => {
-            // 执行删除逻辑
-            this.tableData = []
-          });
-        }
+        this.handleDelete({selectedItem: this.selectedItem}, this.selectedItem)
       });
   },
 };
