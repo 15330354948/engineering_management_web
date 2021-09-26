@@ -258,7 +258,7 @@ export default {
   // 底部分页
   .bottom-pagination {
     position: absolute;
-    bottom: 0;
+    bottom: 20px;
     width: 100%;
     height: 50px;
     display: flex;
