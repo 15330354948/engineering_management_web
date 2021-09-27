@@ -2,7 +2,7 @@
   <div class="mtemplate-container">
     <!-- 弹窗组件 -->
     <Popups @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
-      
+      <mtemplateEdit ref="mtemplateEdit" :mtemplateEdit="mtemplateEdit" v-if="slotStatus.mtemplateEdit"></mtemplateEdit>
     </Popups>
     <!-- 顶部搜索 -->
     <div class="mtemplate-header-container">
@@ -69,11 +69,13 @@
 <script>
 import TableSearch from "@/components/TableSearch";
 import Popups from "../components/popups/index.vue"
+import mtemplateEdit from "./mtemplateEdit/index.vue"
 export default {
   name: "MTemplate",
   components: {
     TableSearch,
-    Popups
+    Popups,
+    mtemplateEdit
   },
   data() {
     return {
@@ -117,6 +119,10 @@ export default {
         // dialog 宽度
         dialogWidth: ""
       },
+      slotStatus: {
+        mtemplateEdit: false,
+      },
+      mtemplateEdit: {}
     };
   },
   methods: {
@@ -189,10 +195,15 @@ export default {
       .$off(`${this.pageSign}CreateClick`)
       .$on(`${this.pageSign}CreateClick`, () => {
         console.log("已监听到创建");
+        // 清除传入
+        this.mtemplateEdit = {}
+        this.slotStatus = {
+          mtemplateEdit: true
+        }
         this.dialogInfo = {
           dialogShow: true,
           dialogTitle: "维护模板新增",
-          dialogWidth: "45%"
+          dialogWidth: "55%"
         }
       });
     this.$bus

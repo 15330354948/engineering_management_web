@@ -300,6 +300,7 @@ export default {
       let formVal = this.$refs[whichOne][whichOne+'Form']
       if(ref.formInvalid) {
         // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
+        console.log("保存值为:", formVal)
         this.handleDialogClose()
       }
     }
