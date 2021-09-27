@@ -2,7 +2,7 @@ import request from '@/utils/request'
 // 查询考核列表
 export function listAssessment(query) {
   return request({
-    url: '/monitor/job/list',
+    url: '/backstage/assessment/list',
     method: 'get',
     params: query
   })
@@ -10,7 +10,7 @@ export function listAssessment(query) {
 // 查询考核详细
 export function getAssessment(assessmentId) {
   return request({
-    url: '/system/post/' + assessmentId,
+    url: '/backstage/assessment/' + assessmentId,
     method: 'get'
   })
 }
@@ -18,7 +18,7 @@ export function getAssessment(assessmentId) {
 // 新增考核
 export function addAssessment(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/assessment',
     method: 'post',
     data: data
   })
@@ -27,7 +27,7 @@ export function addAssessment(data) {
 // 修改考核
 export function updateAssessment(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/assessment',
     method: 'put',
     data: data
   })
@@ -36,7 +36,7 @@ export function updateAssessment(data) {
 // 删除考核
 export function delAssessment(assessmentId) {
   return request({
-    url: '/system/post/' + assessmentId,
+    url: '/backstage/assessment/' + assessmentId,
     method: 'delete'
   })
 }
@@ -44,7 +44,7 @@ export function delAssessment(assessmentId) {
 // 导出考核
 export function exportAssessment(query) {
   return request({
-    url: '/system/post/export',
+    url: '/backstage/assessment/export',
     method: 'get',
     params: query
   })

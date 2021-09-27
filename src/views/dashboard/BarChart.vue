@@ -23,6 +23,10 @@ export default {
     height: {
       type: String,
       default: '300px'
+    },
+    BarData: {
+      type: Object,
+      required: true
     }
   },
   data() {
@@ -47,52 +51,74 @@ export default {
       this.chart = echarts.init(this.$el, 'macarons')
 
       this.chart.setOption({
+        color:['#61a4e4'],
         tooltip: {
+          show:false,
           trigger: 'axis',
           axisPointer: { // 坐标轴指示器，坐标轴触发有效
             type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
           }
         },
         grid: {
-          top: 10,
-          left: '2%',
-          right: '2%',
-          bottom: '3%',
+          top:"20%",
+          left:"10%",
+          right:"20%",
+          bottom:"30%",
           containLabel: true
         },
         xAxis: [{
           type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: this.BarData.xAxis,
           axisTick: {
             alignWithLabel: true
-          }
+          },
+          axisLine: {
+            lineStyle: {
+              type: 'solid',
+              color:'#333',
+              width:'1'
+            }
+          },
+          axisLabel: {
+            textStyle: {
+              color: '#666'
+            }
+          },
         }],
         yAxis: [{
+          show:false,
           type: 'value',
+          splitLine:{
+            show:false
+          },
+          axisLabel: {
+            show: false,
+          },
           axisTick: {
             show: false
-          }
+          },
+          splitArea:{
+            show:false,//是否显示分割区域
+          },
         }],
         series: [{
           name: 'pageA',
           type: 'bar',
           stack: 'vistors',
-          barWidth: '60%',
-          data: [79, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageB',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [80, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageC',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [30, 52, 200, 334, 390, 330, 220],
+          barWidth: '70%',
+          itemStyle: {
+            normal: {
+              label:{
+                show: true, //开启显示
+                position: 'top', //在上方显示
+                textStyle: { //数值样式
+                  color: '#333',
+                  fontSize: 16
+                }
+              },
+            },
+          },  
+          data: this.BarData.yAxis,
           animationDuration
         }]
       })

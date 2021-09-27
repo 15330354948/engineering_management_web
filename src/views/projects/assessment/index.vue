@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item prop="assessmentCode">
+      <el-form-item prop="assessmentName">
         <el-input
-          v-model="queryParams.assessmentCode"
+          v-model="queryParams.assessmentName"
           placeholder="请输入考核模板名称"
           clearable
           size="small"
@@ -59,12 +59,11 @@
 
     <el-table v-loading="loading" :data="assessmentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="考核编号" align="center" prop="assessmentId" />
-      <el-table-column label="考核名称" align="center" prop="assessmentCode" />
-      <el-table-column label="考核地址" align="center" prop="assessmentName" />
-      <el-table-column label="建设期次" align="center" prop="assessmentSort" />
-      <el-table-column label="所属标段" align="center" prop="assessmentSort" />
-      <el-table-column label="考核状态" align="center" prop="status" :formatter="statusFormat" />
+      <el-table-column label="考核名称" align="center" prop="assessmentName" />
+      <el-table-column label="考核模板类型" align="center" prop="type" />
+      <el-table-column label="考核项" align="center" prop="num" />
+      <el-table-column label="创建时间" align="center" prop="createTime" />
+      <el-table-column label="备注" align="center" prop="remarks" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -106,7 +105,7 @@
         <el-form-item label="考核模板名称" prop="assessmentName">
           <el-input v-model="form.assessmentName" placeholder="请输入考核模板名称" />
         </el-form-item>
-        <el-form-item label="考核模板类型" prop="assessmentCode">
+        <el-form-item label="考核模板类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择考核模板类型" clearable>
             <el-option
               v-for="dict in statusOptions"
@@ -118,14 +117,14 @@
         </el-form-item>
         <el-form-item label="考核项">
           <el-button size="medium" type="text" @click="handleAddAssessment">添加项</el-button>
-          <el-table :data="assessmentItemList">
+          <el-table :data="form.zdhjcSubAssessments">
             <el-table-column align="center" prop="assessmentId" >
               <template slot="header">
                 <span style="color:red">*  </span>
                 <span>序号</span>
               </template>
               <template slot-scope="scope">
-                <el-input type="number" v-model="assessmentItemList[scope.$index].a" placeholder="请输入序号" />
+                <el-input type="number" v-model="form.zdhjcSubAssessments[scope.$index].sort" placeholder="请输入序号" />
               </template>
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
@@ -134,7 +133,7 @@
                 <span>考核项目名称</span>
               </template>
               <template slot-scope="scope">
-                <el-input v-model="assessmentItemList[scope.$index].b" placeholder="请输入考核项目名称" />
+                <el-input v-model="form.zdhjcSubAssessments[scope.$index].subAssessmentName" placeholder="请输入考核项目名称" />
               </template>
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
@@ -143,7 +142,7 @@
                 <span>项目分数</span>
               </template>
               <template slot-scope="scope">
-                <el-input type="number" v-model="assessmentItemList[scope.$index].c" placeholder="请输入项目分数" />
+                <el-input type="number" v-model="form.zdhjcSubAssessments[scope.$index].fraction" placeholder="请输入项目分数" />
               </template>
             </el-table-column>
             <el-table-column  align="center" prop="assessmentId">
@@ -152,7 +151,7 @@
                 <span>评价标准</span>
               </template>
               <template slot-scope="scope">
-                <el-input v-model="assessmentItemList[scope.$index].c" placeholder="请输入评价标准" />
+                <el-input v-model="form.zdhjcSubAssessments[scope.$index].standard" placeholder="请输入评价标准" />
               </template>
             </el-table-column>
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -167,8 +166,8 @@
             </el-table-column>
           </el-table>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
+        <el-form-item label="备注" prop="remarks">
+          <el-input v-model="form.remarks" type="textarea" placeholder="请输入内容" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -210,9 +209,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        assessmentCode: undefined,
         assessmentName: undefined,
-        status: undefined
       },
       // 表单参数
       form: {},
@@ -221,14 +218,13 @@ export default {
         assessmentName: [
           { required: true, message: "考核名称不能为空", trigger: "blur" }
         ],
-        assessmentCode: [
-          { required: true, message: "考核编码不能为空", trigger: "blur" }
+        type: [
+          { required: true, message: "请选择考核模板类型", trigger: "change" }
         ],
         assessmentSort: [
           { required: true, message: "考核顺序不能为空", trigger: "blur" }
         ]
       },
-      assessmentItemList:[],//考核项
     };
   },
   created() {
@@ -260,11 +256,10 @@ export default {
     reset() {
       this.form = {
         assessmentId: undefined,
-        assessmentCode: undefined,
         assessmentName: undefined,
-        assessmentSort: 0,
-        status: "0",
-        remark: undefined
+        type: undefined,
+        zdhjcSubAssessments: [],
+        remarks: undefined
       };
       this.resetForm("form");
     },
@@ -304,29 +299,44 @@ export default {
     submitForm: function() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.assessmentId != undefined) {
-            updateAssessment(this.form).then(response => {
-              this.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
+          if(this.form.zdhjcSubAssessments.length>0){
+            this.form.num=this.form.zdhjcSubAssessments.length;
+            this.form.zdhjcSubAssessments.forEach(item => {
+              if(!item.sort){this.msgError("排序不能为空")}
+              else if(!item.subAssessmentName){this.msgError("考核名称不能为空")}
+              else if(!item.fraction){this.msgError("项目分数不能为空")}
+              else if(!item.standard){this.msgError("评价标准不能为空")}
+              else{
+                if (this.form.assessmentId != undefined) {
+                  updateAssessment(this.form).then(response => {
+                    this.msgSuccess("修改成功");
+                    this.open = false;
+                    this.getList();
+                  });
+                } else {
+                  addAssessment(this.form).then(response => {
+                    this.msgSuccess("新增成功");
+                    this.open = false;
+                    this.getList();
+                  });
+                }
+              }
             });
-          } else {
-            addAssessment(this.form).then(response => {
-              this.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
+          }else{
+            console.log(7)
+            this.msgError("请添加考核项")
           }
         }
       });
     },
     // 新增考核模板-考核项目新增按钮
     handleAddAssessment(){
-      this.assessmentItemList.push({a:this.assessmentItemList.length+1,b:'',c:'',url:''})
+      console.log(77)
+      this.form.zdhjcSubAssessments.push({sort:this.form.zdhjcSubAssessments.length+1,subAssessmentName:'',fraction:'',standard:''})
     },
     // 新增规范-所属工序删除按钮
     handleDeleteAssessment(index,row,){
-      this.assessmentItemList.splice(index)
+      this.form.zdhjcSubAssessments.splice(index)
     },
     /** 删除按钮操作 */
     handleDelete(row) {
