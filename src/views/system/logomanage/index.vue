@@ -158,6 +158,13 @@ export default {
           margin-left: 100px;
         }
       }
+      ::v-deep .is-ready {
+        display: none;
+      }
+      ::v-deep .is-uploading {
+        transition: none !important;
+        display: none;
+      } 
       ::v-deep .el-upload {
         width: 100%;
         height: 90px;
