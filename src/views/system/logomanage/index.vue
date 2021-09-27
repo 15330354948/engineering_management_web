@@ -3,7 +3,7 @@
     <div class="pcLogo">
       <div class="logo-title">PC端</div>
       <div class="logo-set">
-        <el-form ref="pcform" :model="pcform" label-width="80px">
+        <el-form ref="pcform" :model="pcform" :rules="pcrules" label-width="80px">
           <el-form-item label="登录Logo">
             <el-upload
               :class="!disableEdit?'show':'hide'"
@@ -13,7 +13,7 @@
               <div class="el-upload__text" v-if="!disableEdit">更改图片</div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="系统名称">
+          <el-form-item label="系统名称" prop="systemName">
             <el-input :disabled="disableEdit" v-model="pcform.systemName"></el-input>
           </el-form-item>
           <el-form-item label="登录Logo">
@@ -25,7 +25,7 @@
               <div class="el-upload__text" v-if="!disableEdit">更改图片</div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="管理平台名称">
+          <el-form-item label="管理平台名称" prop="mplatFormName">
             <el-input :disabled="disableEdit" v-model="pcform.mplatFormName"></el-input>
           </el-form-item>
           <el-form-item label="登录Logo">
@@ -37,7 +37,7 @@
               <div class="el-upload__text" v-if="!disableEdit">更改图片</div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="监管平台名称">
+          <el-form-item label="监管平台名称" prop="regulatoryPlatformNm">
             <el-input :disabled="disableEdit" v-model="pcform.regulatoryPlatformNm"></el-input>
           </el-form-item>
           <el-form-item v-if="disableEdit">
@@ -53,7 +53,7 @@
     <div class="appLogo">
       <div class="logo-title">APP</div>
       <div class="logo-set">
-        <el-form ref="appform" :model="appform" label-width="80px">
+        <el-form ref="appform" :model="appform" :rules="apprules" label-width="80px">
           <el-form-item label="登录Logo">
             <el-upload
               :class="!disableEdit?'show':'hide'"
@@ -63,7 +63,7 @@
               <div class="el-upload__text" v-if="!disableEdit">更改图片</div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="系统名称">
+          <el-form-item label="系统名称" prop="systemName">
             <el-input :disabled="disableEdit" v-model="appform.systemName"></el-input>
           </el-form-item>
         </el-form>
@@ -86,7 +86,24 @@ export default {
       },
       // 禁用编辑
       disableEdit: true,
-       fileList: [{name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
+      fileList: [{name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}],
+      // pcrule
+      pcrules: {
+        systemName: [
+          { required: true, message: '请填写PC系统名称', trigger: 'change' }
+        ],
+        mplatFormName: [
+          { required: true, message: '请填写管理平台名称', trigger: 'change' }
+        ],
+        regulatoryPlatformNm: [
+          { required: true, message: '请填写监管平台名称', trigger: 'change' }
+        ]
+      },
+      apprules: {
+        systemName: [
+          { required: true, message: '请填写App系统名称', trigger: 'change' }
+        ]
+      }
     };
   },
   methods: {
