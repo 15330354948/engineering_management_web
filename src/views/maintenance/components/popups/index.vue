@@ -16,8 +16,8 @@
         <slot></slot>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="feedback">保 存</el-button>
+        <el-button @click="dialogVisible = false" v-if="!(config&&!config.hide)">取 消</el-button>
+        <el-button type="primary" v-if="!(config&&!config.hidelabel)" @click="feedback">{{config&&config.label || '保 存'}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -32,7 +32,9 @@
       // dialog 宽度
       dialogWidth: String,
       // dialog 显示隐藏
-      dialogShow: Boolean
+      dialogShow: Boolean,
+      // 配置
+      config: Object
     },
     data() {
       return {
@@ -45,6 +47,7 @@
     watch: {
       dialogShow: {
         handler(val) {
+          console.log(this.$refs)
           this.dialogVisible = val
         }
       }
@@ -89,7 +92,7 @@
     }
   }
   ::v-deep .el-dialog__body {
-    max-height: 600px;
+    max-height: 1200px;
     overflow: auto;
     margin-bottom: 20px;
     &::-webkit-scrollbar-thumb {

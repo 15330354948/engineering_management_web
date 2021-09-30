@@ -7,19 +7,13 @@
       label-width="100px"
     >
       <div class="each-line">
-        <el-form-item label="维护模板名称" prop="templateName">
-          <el-input autosize placeholder="请输入维护模板名称" v-model="mtemplateEditForm.templateName"></el-input>
-        </el-form-item>
-        <el-form-item label="设备类型" prop="deviceType">
-          <el-select clearable v-model="mtemplateEditForm.deviceType" placeholder="请选择设备类型">
-            <el-option label="项目一" value="shanghai"></el-option>
-            <el-option label="项目二" value="beijing"></el-option>
-          </el-select>
+        <el-form-item label="巡检项目模板名称" prop="templateName">
+          <el-input autosize placeholder="请输入巡检项目模板名称" v-model="mtemplateEditForm.templateName"></el-input>
         </el-form-item>
       </div>
       
       <div class="each-line special-line">
-        <el-form-item label="维护项">
+        <el-form-item label="巡检项">
           <el-button @click="addRow()" type="text">添加项</el-button>
           <el-table
             :data="tableData"
@@ -32,7 +26,7 @@
               width="50">
             </el-table-column>
             <el-table-column
-              label="维护项"
+              label="巡检项"
               width="350">
               <template slot-scope="scope">
                 <!-- 通过index来区分每个块的数据 -->
@@ -40,7 +34,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="维护要求"
+              label="巡检要求"
               width="350">
                <template slot-scope="scope">
                 <!-- 通过index来区分每个块的数据，以及是否禁用的控制 -->
@@ -66,7 +60,7 @@
 
 <script>
 export default {
-  name: "mtemplateEditForm",
+  name: "isTemplateEdit",
   methods: {
     // 新增一行
     addRow() {
@@ -161,7 +155,7 @@ export default {
             this.formInvalid = true
           } else {
             this.formInvalid = false
-            this.msgError("维护项步骤有误，请检查")
+            this.msgError("巡检项步骤有误，请检查")
           }
         } else {
           this.formInvalid = false
@@ -232,10 +226,11 @@ export default {
   }
   ::v-deep .el-form-item__label {
     padding: 0;
+    width: 150px !important;
   }
   ::v-deep .el-form-item__content {
     display: flex;
-    margin-left: 120px !important;
+    margin-left: 170px !important;
   }
   ::v-deep .el-form-item {
     width: 100%;

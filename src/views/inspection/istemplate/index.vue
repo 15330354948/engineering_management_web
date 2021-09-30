@@ -2,7 +2,7 @@
   <div class="mtemplate-container">
     <!-- 弹窗组件 -->
     <Popups @dosave="saveInfo" @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
-      <mtemplateEdit ref="mtemplateEdit" :mtemplateEdit="mtemplateEdit" v-if="slotStatus.mtemplateEdit"></mtemplateEdit>
+      <isTemplateEdit ref="mtemplateEdit" :mtemplateEdit="mtemplateEdit" v-if="slotStatus.mtemplateEdit"></isTemplateEdit>
     </Popups>
     <!-- 顶部搜索 -->
     <div class="mtemplate-header-container">
@@ -68,14 +68,14 @@
 
 <script>
 import TableSearch from "@/components/TableSearch";
-import Popups from "../components/popups/index.vue"
-import mtemplateEdit from "./mtemplateEdit/index.vue"
+import Popups from "@/views/maintenance/components/popups/index.vue"
+import isTemplateEdit from "./isTemplateEdit/index.vue"
 export default {
   name: "MTemplate",
   components: {
     TableSearch,
     Popups,
-    mtemplateEdit
+    isTemplateEdit
   },
   data() {
     return {

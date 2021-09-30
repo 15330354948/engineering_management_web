@@ -7,6 +7,7 @@
           <el-form-item label="登录Logo">
             <el-upload
               :class="!disableEdit?'show':'hide'"
+              :on-change="uploadImage"
               action="https://jsonplaceholder.typicode.com/posts/"
               list-type="picture"
               :file-list="fileList">
@@ -115,6 +116,9 @@ export default {
     },
     onCancel() {
       this.disableEdit = true
+    },
+    uploadImage(response, file, fileList) {
+      console.log(response, file, fileList)
     }
   },
 };
