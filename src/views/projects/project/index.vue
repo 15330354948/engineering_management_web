@@ -5,7 +5,7 @@
         <el-input v-model="queryParams.ProjectCode" placeholder="请输入项目编号/名称" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item prop="area"  placeholder="请选择区域">
+      <el-form-item prop="area" placeholder="请选择区域">
         <el-cascader v-model="queryParams.area" :options="areaOptions" clearable>
         </el-cascader>
       </el-form-item>
@@ -28,30 +28,30 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAdd"
+        <el-button type="primary" @click="handleAdd"
           v-hasPermi="['project:Project:add']">新增</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleImport" v-hasPermi="['project:Project:import']">导入
+        <el-button type="primary" @click="handleImport" v-hasPermi="['project:Project:import']">导入
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleExport" v-hasPermi="['project:Project:export']">导出
+        <el-button type="primary" @click="handleExport" v-hasPermi="['project:Project:export']">导出
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleChild" v-hasPermi="['project:Project:export']">子项查询
+        <el-button type="primary" @click="handleChild" v-hasPermi="['project:Project:export']">子项查询
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
+        <el-button type="primary" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['project:Project:remove']">删除选中</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -94,33 +94,34 @@
       <childQuery></childQuery>
     </el-dialog>
 
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="项目名称" prop="ProjectName">
-          <el-input v-model="form.ProjectName" placeholder="请输入项目名称" />
-        </el-form-item>
-        <el-form-item label="项目编码" prop="ProjectCode">
-          <el-input v-model="form.ProjectCode" placeholder="请输入编码名称" />
-        </el-form-item>
-        <el-form-item label="项目顺序" prop="ProjectSort">
-          <el-input-number v-model="form.ProjectSort" controls-position="right" :min="0" />
-        </el-form-item>
-        <el-form-item label="项目状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictValue">{{dict.dictLabel}}
-            </el-radio>
-            <el-input v-model="form.ProjectCode2" placeholder="请输入编码名称" />
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-      </el-form>
+    <!-- 修改或详情 -->
+    <el-dialog :title="title" :visible.sync="open" width="70%" append-to-body :before-close="editAndInfoClose">
+      <editAndInfo :btnType="btnType" ref="editAndInfo"></editAndInfo>
+    </el-dialog>
+
+    <!-- 人员分配 -->
+    <el-dialog :title="title" :visible.sync="personOpen" width="60%" append-to-body>
+      <el-table v-loading="loading" :data="personList">
+        <el-table-column label="单位类别" align="center" prop="category" />
+        <el-table-column label="机构名称" align="center" prop="name" />
+        <el-table-column label="审批顺序" align="center" prop="order" />
+        <el-table-column label="监督人员" align="center" prop="person">
+          <template slot-scope="scope">
+            <el-select v-model="scope.row.person" placeholder="请选择创建期次" clearable size="small">
+              <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
+                :value="dict.dictValue" />
+            </el-select>
+          </template>
+        </el-table-column>
+      </el-table>
+
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="submitForm">保存并分配</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+
   </div>
 </template>
 
@@ -135,12 +136,13 @@
   } from "@/api/projects/project";
   import addForm from "./addForm.vue"
   import childQuery from './childQuery.vue'
-
+  import editAndInfo from './editAndInfo.vue'
   export default {
     name: "Project",
     components: {
       addForm,
-      childQuery
+      childQuery,
+      editAndInfo
     },
     data() {
       return {
@@ -158,14 +160,22 @@
         total: 0,
         // 项目表格数据
         ProjectList: [],
+        // 人员分配数据
+        personList: [{
+          category: "name"
+        }, {
+          category: "name2"
+        }],
         // 弹出层标题
         title: "",
         // 是否显示弹出层
         open: false,
         // 新增弹出层
         addOpen: false,
+        // 人员分配弹出层
+        personOpen: false,
         // 子项查询弹出层
-        childOpen:false,
+        childOpen: false,
         // 状态数据字典
         statusOptions: [],
         // 区域
@@ -175,7 +185,7 @@
           pageNum: 1,
           pageSize: 10,
           ProjectCode: undefined,
-          area:undefined,
+          area: undefined,
           createPeriod: undefined,
           section: undefined,
           projectStatus: undefined
@@ -200,7 +210,7 @@
             trigger: "blur"
           }]
         },
-        
+        btnType: ""
       };
     },
     created() {
@@ -225,9 +235,7 @@
       },
       // 取消按钮
       cancel() {
-        this.open = false;
-        this.addOpen = false;
-        // this.childOpen = false;
+        this.personOpen = false;
         this.reset();
       },
       // 表单重置
@@ -249,6 +257,15 @@
       handleClose() {
         this.$refs.child.reset();
         this.closeDialog();
+      },
+      editAndInfoClose() {
+        this.open = false
+        this.$refs.editAndInfo.$refs.projectInfo.reset();
+        this.$refs.editAndInfo.$refs.dataManagement.resetQuery();
+        this.$refs.editAndInfo.$refs.subManagement.resetQuery();
+        this.$refs.editAndInfo.$refs.maintainManagement.resetQuery();
+        this.$refs.editAndInfo.$refs.investmentManagement.resetQuery();
+        this.$refs.editAndInfo.activeName = 'projectInfo'
       },
       /** 搜索按钮操作 */
       handleQuery() {
@@ -274,20 +291,31 @@
       },
       /** 修改按钮操作 */
       handleUpdate(row) {
+        this.open = true;
+        this.title = "编辑项目";
         this.reset();
-        const ProjectId = row.ProjectId || this.ids
-        getProject(ProjectId).then(response => {
-          this.form = response.data;
-          this.open = true;
-          this.title = "修改项目";
-        });
+        this.btnType = "edit";
+        // const ProjectId = row.ProjectId || this.ids
+        // getProject(ProjectId).then(response => {
+        //   this.form = response.data;
+        //   this.open = true;
+        //   this.title = "修改项目";
+        // });
       },
       // 分配按钮操作
-      handleDistribution() {},
+      handleDistribution() {
+        this.personOpen = true;
+        this.title = "人员分配";
+      },
       // 下载按钮操作
       handleDownload() {},
       // 详情按钮操作
-      handleDetail() {},
+      handleDetail() {
+        this.open = true;
+        this.title = "项目详情";
+        this.reset();
+        this.btnType = "info";
+      },
       // 子项查询
       handleChild() {
         this.reset();

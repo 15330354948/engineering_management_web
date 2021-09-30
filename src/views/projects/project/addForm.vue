@@ -244,7 +244,7 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="总质评分" prop="score">
-                  <el-input v-model="addForm.score" placeholder="系统自动生成" disabled/>
+                  <el-input v-model="addForm.score" placeholder="系统自动生成" disabled />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -264,7 +264,13 @@
 </template>
 
 <script>
+  import {
+    defaultSelect
+  } from './directive'
   export default {
+    directives: {
+      defaultSelect
+    },
     data() {
       return {
         activeName: 'first',
@@ -324,22 +330,22 @@
             message: "关联水印不能为空",
             trigger: "blur"
           }],
-          companyName:[{
+          companyName: [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          companyName2:[{
+          companyName2: [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          companyName3:[{
+          companyName3: [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          companyName4:[{
+          companyName4: [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
@@ -372,19 +378,12 @@
         // 考核模板
         assessOption: [],
         // 单位名称
-        companyOption: []
+        companyOption: [],
       }
     },
     created() {
       this.addForm.stepValue.push(this.stepOption[0].value)
-    },
-    watch: {
-      // stepValue: {
-      //   handler(val) {
-      //     // console.log(val);
-      //   }
-      // }
-    },
+    },  
     methods: {
       /** 提交按钮 */
       submitForm: function () {

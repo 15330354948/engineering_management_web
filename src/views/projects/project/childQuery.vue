@@ -84,7 +84,7 @@
     <el-dialog :title="title" :visible.sync="distributionOpen" width="30%" append-to-body :before-close="handleClose">
       <el-form ref="distributionForm" :model="distributionForm" :rules="rules" label-width="80px">
         <el-form-item label="施工组" prop="constructionTeam">
-          <el-input v-model="distributionForm.constructionTeam" placeholder="请输入项目名称" />
+          <el-input v-model="distributionForm.constructionTeam" placeholder="请输入施工组" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -94,48 +94,41 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog :title="title" :visible.sync="infoOpen" width="80%" append-to-body>
-      <el-row :gutter="24">
-        <el-col :span="5">
-          <div class="subList">
-            <div class="header">
-              <span>监测列表</span>
-              <span class="addItem" @click="addPoint">添加测点</span>
-            </div>
-          </div>
-        </el-col>
+    <el-dialog :title="title" :visible.sync="infoOpen" width="80%" append-to-body :before-close="infoHandleClose">
+      <subProInfo ref="subInfo"></subProInfo>
+    </el-dialog>
 
-        <el-col :span="19">
-          <el-form :model="subQueryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="85px">
-            <el-form-item label="测点名称" prop="pointName">
-              <el-input v-model="subQueryParams.pointName" placeholder="请输入测点名称" clearable size="small"
-                :disabled="isDisabled" />
-            </el-form-item>
-            <el-form-item label="设计经纬度" prop="LongAndLatitude">
-              <el-input v-model="subQueryParams.LongAndLatitude" placeholder="请输入设计经纬度" clearable size="small"
-                :disabled="isDisabled">
-                <el-button style="padding-right:10px" slot="suffix" type="text" v-if="isDisabled==false">选择</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="设备类型" prop="devType">
-              <el-select v-model="queryParams.devType" placeholder="请选择设备类型" clearable size="small"
-                :disabled="isDisabled">
-                <el-option v-for="dict in devTypeOptions" :key="dict.dictValue" :label="dict.dictLabel"
-                  :value="dict.dictValue" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="设备ID" prop="devId" v-if="isDisabled==false">
-              <el-input v-model="subQueryParams.devId" size="small" disabled />
-            </el-form-item>
-          </el-form>
-          <div class="dialog-footer" v-if="isDisabled==false">
-            <el-button type="primary" @click="infoSubmitForm">确 定</el-button>
-            <el-button @click="infoCancel">取 消</el-button>
-          </div>
-        </el-col>
-
-      </el-row>
-
+    <!-- 修改 -->
+    <el-dialog :title="title" :visible.sync="editOpen" width="40%" append-to-body :before-close="handleClose">
+      <el-form :model="eidtForm" ref="eidtForm" :rules="editRules" :inline="true" label-width="100px">
+        <el-form-item label="子项目名称" prop="subProjectName">
+          <el-input v-model="eidtForm.subProjectName" placeholder="请输入测点名称" clearable size="small" />
+        </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <el-select v-model="eidtForm.type" placeholder="请选择设备类型" clearable size="small">
+            <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
+              :value="dict.dictValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="工序" prop="working">
+          <el-select v-model="eidtForm.working" placeholder="请选择工序" clearable size="small">
+            <el-option v-for="dict in workingOptions" :key="dict.dictValue" :label="dict.dictLabel"
+              :value="dict.dictValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="项目地址" prop="address">
+          <el-cascader style="width:40%" v-model="eidtForm.address" :options="areaOptions"
+            :props="{ checkStrictly: true }" clearable></el-cascader>
+          <el-input style="width:55%;margin-left: 10px" v-model="eidtForm.loction" placeholder="详细地址" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="eidtForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="editSubmitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -149,7 +142,11 @@
     updateProject,
     exportProject
   } from "@/api/projects/project";
+  import subProInfo from './subProInfo.vue'
   export default {
+    components: {
+      subProInfo
+    },
     data() {
       return {
         // 遮罩层
@@ -172,6 +169,28 @@
             trigger: "blur"
           }]
         },
+        editRules: {
+          subProjectName: [{
+            required: true,
+            message: "子项目名称不能为空",
+            trigger: "blur"
+          }],
+          type: [{
+            required: true,
+            message: "类型不能为空",
+            trigger: "blur"
+          }],
+          working: [{
+            required: true,
+            message: "工序不能为空",
+            trigger: "blur"
+          }],
+          address: [{
+            required: true,
+            message: "地址不能为空",
+            trigger: "blur"
+          }]
+        },
         // 查询参数
         queryParams: {
           pageNum: 1,
@@ -180,21 +199,24 @@
           ProjectName: undefined,
           status: undefined
         },
-        // 子项详情
-        subQueryParams: {},
+
         // 子项类型
         typeOptions: [],
         statusOptions: [],
-        // 设备类型
-        devTypeOptions: [],
+        
+        typeOptions: [],
+        workingOptions: [],
         // 区域
         areaOptions: [],
         // 弹出层
         distributionOpen: false,
         infoOpen: false,
+        editOpen: false,
         title: '',
         // 施工人员表单
         distributionForm: {},
+
+        eidtForm: {},
         isDisabled: true
       }
     },
@@ -250,17 +272,26 @@
       },
       cancel() {
         this.distributionOpen = false;
+
+        this.editOpen = false;
         this.resetForm("distributionForm");
+        this.resetForm("eidtForm");
       },
       handleClose() {
         this.cancel();
       },
-      infoCancel() {
-        this.resetForm("infoForm");
-        this.isDisabled = true;
+      infoHandleClose() {
+        this.infoOpen = false;
+        this.$refs.subInfo.infoCancel();
       },
-      infoSubmitForm() {
 
+
+      editSubmitForm() {
+        this.$refs["eidtForm"].validate(valid => {
+          if (valid) {
+
+          }
+        });
       },
       //   施工分配提交
       distributionSubmitForm() {
@@ -290,12 +321,14 @@
         this.title = "子项详情";
         this.infoOpen = true;
       },
+      // 修改按钮操作
+      handleUpdate() {
+        this.title = "子项目编辑";
+        this.editOpen = true;
+      },
       // 下载按钮操作
       handleDownload() {},
-      //   添加测点
-      addPoint() {
-        this.isDisabled = false
-      }
+
 
     }
 
@@ -303,7 +336,7 @@
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   //   .el-dialog {
   //     display: flex;
   //     flex-direction: column;
@@ -321,31 +354,5 @@
   //     flex: 1;
   //     overflow: auto;
   //   }
-  .subList {
-    width: 100%;
-    height: 700px;
-    border: 1px solid #e6e6e6;
-  }
-
-  .subList .header {
-    width: 100%;
-    height: 40px;
-    background-color: #f8f8f9;
-    border-bottom: 1px solid #e6e6e6;
-    display: flex;
-    justify-content: space-between;
-    line-height: 40px;
-    padding: 0 10px;
-  }
-
-  .subList .header span {
-    font-weight: bold;
-  }
-
-  .subList .header .addItem {
-    font-weight: normal;
-    color: #66b1ff;
-    cursor: pointer;
-  }
 
 </style>
