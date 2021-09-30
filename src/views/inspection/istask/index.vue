@@ -1,9 +1,17 @@
 <template>
   <div class="mtask-container">
     <!-- 弹窗组件 -->
-    <Popups @dosave="saveInfo" @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
-      <mtaskEdit ref="mtaskEdit" :taskTableForm="taskTableForm" v-if="slotStatus.mtaskEdit"></mtaskEdit>
-      <mPeople ref="mPeople" v-if="slotStatus.mPeople"></mPeople>
+    <Popups
+      @dosave="saveInfo"
+      @dclose="handleDialogClose"
+      ref="popups"
+      :dialogTitle="dialogInfo.dialogTitle"
+      :dialogShow="dialogInfo.dialogShow"
+      :dialogWidth="dialogInfo.dialogWidth"
+      :config="dialogInfo.config"
+    >
+      <isDetails @showrecords="showrecords" ref="isDetails" :isDetails="isDetails" v-if="slotStatus.isDetails"></isDetails>
+      <isRecord ref="isRecord" :isRecord="isRecord" v-if="slotStatus.isRecord"></isRecord>
     </Popups>
     <!-- 顶部搜索 -->
     <div class="mtask-header-container">
@@ -14,40 +22,18 @@
           label-width="200px"
           class="mtaskForm"
         >
-          <el-form-item prop="mtaskName">
+          <el-form-item prop="proName">
             <el-input
               type="text"
-              placeholder="请输入维护任务名称"
-              v-model="mtaskForm.mtaskName"
+              placeholder="请输入项目名称"
+              v-model="mtaskForm.proName"
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <el-form-item prop="mtaskPerson">
-            <el-input
-              type="text"
-              placeholder="请输入维护人"
-              v-model="mtaskForm.mtaskPerson"
-              autocomplete="off"
-            ></el-input>
-          </el-form-item>
-          <el-form-item prop="planningDate">
-            <el-date-picker
-            v-model="mtaskForm.planningDate"
-            type="date"
-            placeholder="请选择计划时间">
-          </el-date-picker>
-          </el-form-item>
-          <el-form-item prop="finishDate">
-            <el-date-picker
-            v-model="mtaskForm.finishDate"
-            type="date"
-            placeholder="请选择实际完成时间">
-          </el-date-picker>
-          </el-form-item>
-          <el-form-item label-width="200px" prop="mtaskStatus">
+          <el-form-item label-width="200px" prop="inspector">
             <el-select
-              v-model="mtaskForm.mtaskStatus"
-              placeholder="请选择状态"
+              v-model="mtaskForm.inspector"
+              placeholder="请选择巡检人"
             >
               <el-option
                 v-for="item in mtaskStatusList"
@@ -58,33 +44,40 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label-width="200px" prop="mtaskResult">
-            <el-select
-              v-model="mtaskForm.mtaskResult"
-              placeholder="请选择结果"
+          <el-form-item label-width="200px" prop="dt">
+            <el-date-picker
+              v-model="mtaskForm.dt"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
             >
-              <el-option
-                v-for="item in mtaskResultList"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
+            </el-date-picker>
           </el-form-item>
         </el-form>
       </div>
       <!-- 使用该组件获取点击通知 -->
-      <div style="position:absolute; right: 10px"><TableSearch :pageSign="pageSign"></TableSearch></div>
+      <div style="position: absolute; right: 30%">
+        <TableSearch :pageSign="pageSign" :hideOpt="['Create']"></TableSearch>
+      </div>
     </div>
 
     <!-- 表格 -->
-   <div class="table-panel">
+    <div class="table-panel">
       <el-table
         ref="multipleTable"
         :data="tableData"
         tooltip-effect="dark"
-        style="width: calc(100% - 20px); height: 650px; left: 0; right: 10px; position: absolute; margin: 12.5px; margin-top: 0; overflow: auto"
+        style="
+          width: calc(100% - 20px);
+          height: 650px;
+          left: 0;
+          right: 10px;
+          position: absolute;
+          margin: 12.5px;
+          margin-top: 0;
+          overflow: auto;
+        "
         border
         @selection-change="handleSelectionChange"
       >
@@ -101,13 +94,20 @@
         </el-table-column>
         <el-table-column prop="name" label="维护结果" width="120">
         </el-table-column>
-        <el-table-column
-          label="操作"
-          >
+        <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-button @click="handleMPerson(scope.row)" type="text" icon="el-icon-user">维护人员</el-button>
-            <el-button @click="handleMEdit(scope.row)" type="text" icon="el-icon-edit">修改</el-button>
-            <el-button @click="handleMDelete(scope.row)" type="text" icon="el-icon-delete">删除</el-button>
+            <el-button
+              @click="handleMEdit(scope.row)"
+              type="text"
+              icon="el-icon-info"
+              >详情</el-button
+            >
+            <el-button
+              @click="handleMDelete(scope.row)"
+              type="text"
+              icon="el-icon-delete"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -123,33 +123,24 @@
 
 <script>
 import TableSearch from "@/components/TableSearch";
-import Popups from "../components/popups/index.vue"
-import mtaskEdit from "./mtaskEdit/index.vue"
-import mPeople from "./mPeople/index.vue"
+import Popups from "@/views/maintenance/components/popups/index.vue";
+import isDetails from "./isDetails/index.vue"
+import isRecord from "./isRecord/index.vue"
 export default {
   name: "MTask",
   components: {
     TableSearch,
     Popups,
-    mtaskEdit,
-    mPeople
+    isDetails,
+    isRecord
   },
   data() {
     return {
       pageSign: "mtask",
       mtaskForm: {
-        // 维护任务名称
-        mtaskName: "",
-        // 维护人
-        mtaskPerson: "",
-        // 计划时间
-        planningDate: "",
-        // 实际完成时间
-        finishDate: "",
-        // 状态
-        mtaskStatus: "",
-        // 结果
-        mtaskResult: "",
+        dt: [],
+        proName: "",
+        inspector: ""
       },
       // 弹窗相关
       dialogInfo: {
@@ -158,7 +149,7 @@ export default {
         // dialog 显示隐藏
         dialogShow: false,
         // dialog 宽度
-        dialogWidth: ""
+        dialogWidth: "",
       },
       // 状态列表
       mtaskStatusList: [
@@ -187,122 +178,134 @@ export default {
       mtaskResultList: [
         {
           label: "优秀",
-          value: 0
+          value: 0,
         },
         {
           label: "良好",
-          value: 1
+          value: 1,
         },
         {
           label: "一般",
-          value: 2
+          value: 2,
         },
         {
           label: "较差",
-          value: 3
-        }
+          value: 3,
+        },
       ],
       // 表格数据
       tableData: [
         {
           date: "测试日期1",
           name: "测试1",
-          address: "测试地址1"
+          address: "测试地址1",
         },
         {
           date: "测试日期2",
           name: "测试2",
-          address: "测试地址2"
-        }
+          address: "测试地址2",
+        },
       ],
       // 表格当前选中项
       selectedItem: [],
       // 插槽组件管理
       slotStatus: {
         mtaskEdit: false,
-        mPeople: false
+        mPeople: false,
       },
-      // 修改时传入，创建时清楚
-      taskTableForm: {}
+      // 修改时传入，创建时清除
+      taskTableForm: {},
+      // isDetails, 详情数据
+      isDetails: {},
+      // isRecord, 施工记录
+      isRecord: {}
     };
   },
   methods: {
     // 多选处理
     handleSelectionChange(selection) {
-      this.selectedItem = selection
+      this.selectedItem = selection;
     },
     // 弹窗关闭处理
     handleDialogClose() {
-      this.dialogInfo.dialogShow = false
-      this.slotStatus = {}
-    },
-    // 维护人员
-    handleMPerson(row) {
-      console.log("这一行内容的信息", row)
-      this.slotStatus = {
-        mPeople: true
-      }
-      console.log(this.slotStatus)
-      this.dialogInfo = {
-        dialogShow: true,
-        dialogTitle: "维护人员分配",
-        dialogWidth: "20%"
+      if(this.slotStatus.isRecord) {
+        this.dialogInfo.dialogShow = false;
+        setTimeout(() => {
+        this.slotStatus = {
+          isDetails: true,
+        };
+        this.dialogInfo = {
+          dialogShow: true,
+          dialogTitle: "巡检详情",
+          dialogWidth: "55%",
+          config: {hide:false, hidelabel: true, label:'确定'}
+        };
+        }, 0);
+      } else {
+        this.dialogInfo.dialogShow = false;
+        this.slotStatus = {};
       }
     },
     // 修改
     handleMEdit(row) {
-      console.log("这一行内容的信息", row)
-      this.taskTableForm = {
-        projectName: "测试",
-        subProject1: "beijing",
-        subProject2: "shanghai",
-        subProject3: "shanghai"
-      }
+      console.log("这一行内容的信息", row);
       this.slotStatus = {
-        mtaskEdit: true
-      }
+        isDetails: true,
+      };
       this.dialogInfo = {
         dialogShow: true,
-        dialogTitle: "修改维护任务",
-        dialogWidth: "55%"
-      }
+        dialogTitle: "巡检详情",
+        dialogWidth: "55%",
+        config: {hide:false, hidelabel: true,label:'确定'}
+      };
     },
     // 通用删除
-    handleDelete(config=undefined, data) {
-      let hint
-      if(config) {
-        hint = `确认删除已选中的 ${config.selectedItem.length} 条数据?`
+    handleDelete(config = undefined, data) {
+      let hint;
+      if (config) {
+        hint = `确认删除已选中的 ${config.selectedItem.length} 条数据?`;
       } else {
-        hint = "确认删除当前这条数据?"
+        hint = "确认删除当前这条数据?";
       }
       this.$confirm(hint, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
-      }).then(() => {
-        // 执行删除逻辑
-        console.log("要删除的信息", data)
-        this.tableData = []
-      }).catch(() => {
-        console.log("取消删除")
-      });
+      })
+        .then(() => {
+          // 执行删除逻辑
+          console.log("要删除的信息", data);
+          this.tableData = [];
+        })
+        .catch(() => {
+          console.log("取消删除");
+        });
     },
     // 删除
     handleMDelete(row) {
-      console.log("这一行的信息", row)
-      this.handleDelete(undefined, row) 
+      console.log("这一行的信息", row);
+      this.handleDelete(undefined, row);
     },
     // 提交数据
     saveInfo() {
-      // 对应的表单数据
-      let whichOne = Object.entries(this.slotStatus)[0][0]
-      let ref = this.$refs[whichOne]
-      let formVal = this.$refs[whichOne][whichOne+'Form']
-      if(ref.formInvalid) {
-        // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
-        console.log("保存值为:", formVal)
-        this.handleDialogClose()
-      }
+      console.log("yes")
+      // 关闭
+      this.dialogInfo.dialogShow = false;
+      setTimeout(() => {
+        this.slotStatus = {};
+      },500)
+    },
+    // 详情中点击了查看记录
+    showrecords() {
+      this.slotStatus = {
+        isRecord: true,
+      };
+      this.dialogInfo = {
+        dialogShow: true,
+        dialogTitle: "施工",
+        dialogWidth: "85%",
+        config: {hide:false, hidelabel: false}
+      };
     }
   },
   created() {
@@ -323,15 +326,15 @@ export default {
       .$on(`${this.pageSign}CreateClick`, () => {
         console.log("已监听到创建");
         // 清除传入
-        this.taskTableForm = {}
+        this.taskTableForm = {};
         this.slotStatus = {
-          mtaskEdit: true
-        }
+          mtaskEdit: true,
+        };
         this.dialogInfo = {
           dialogShow: true,
           dialogTitle: "创建维护任务",
-          dialogWidth: "55%"
-        }
+          dialogWidth: "55%",
+        };
       });
     this.$bus
       .$off(`${this.pageSign}ExportClick`)
@@ -341,12 +344,15 @@ export default {
     this.$bus
       .$off(`${this.pageSign}DeleteClick`)
       .$on(`${this.pageSign}DeleteClick`, () => {
-        if(this.selectedItem.length>0) {
-          this.handleDelete({selectedItem: this.selectedItem}, this.selectedItem)
-        }else{
+        if (this.selectedItem.length > 0) {
+          this.handleDelete(
+            { selectedItem: this.selectedItem },
+            this.selectedItem
+          );
+        } else {
           this.$message({
-            message: '请勾选数据',
-            type: 'warning'
+            message: "请勾选数据",
+            type: "warning",
           });
         }
       });

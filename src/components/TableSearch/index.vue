@@ -1,6 +1,8 @@
 <template>
   <div class="tablesearch-container">
-    <el-button @click="handleClick(item.type)" v-for="item in searchList" size="medium" :key="item.type" :type="item.isPrimary?'primary':''">{{item.label}}</el-button>
+    <template v-for="item in searchList">
+      <el-button v-if="!(hideOpt&&hideOpt.includes(item.type))" @click="handleClick(item.type)" size="medium" :key="item.type" :type="item.isPrimary?'primary':''">{{item.label}}</el-button>
+    </template>
   </div>
 </template>
 
@@ -9,7 +11,8 @@
     name: 'TableSearch',
     props: {
       // 区分每个页面
-      pageSign: String
+      pageSign: String,
+      hideOpt: Array
     },
     data() {
       return {

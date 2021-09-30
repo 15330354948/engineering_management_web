@@ -21,6 +21,10 @@ export default {
     height: {
       type: String,
       default: '300px'
+    },
+    pieData: {
+      type: Array,
+      required: true
     }
   },
   data() {
@@ -45,29 +49,52 @@ export default {
       this.chart = echarts.init(this.$el, 'macarons')
 
       this.chart.setOption({
+        color:['#ffcc99','#9583ff','#b530cd','#ff6992','#ffea5d'],
+        title:{
+          subtext:'合格率',
+          left:'center',
+          top:'32%',
+          subtextStyle:{
+            fontSize:16,
+            color:'#000',
+            fontWeight:'bold',
+            fontFamily:'微软雅黑'
+          }
+        },
         tooltip: {
           trigger: 'item',
-          formatter: '{a} <br/>{b} : {c} ({d}%)'
+          // backgroundColor: '#fff', // 提示框浮层的背景颜色。
+          // borderColor: '#333', // 提示框浮层的边框颜色。
+          // textStyle: { // 提示框浮层的文本样式。
+          //   color: '#333',
+          //   fontSize: 14,
+          // },
+          // formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
         legend: {
-          left: 'center',
-          bottom: '10',
-          data: ['Industries', 'Technology', 'Forex', 'Gold', 'Forecasts']
+          right: 10,
+          width:200,
+          top: 50,
+          bottom: 20,
         },
         series: [
           {
-            name: 'WEEKLY WRITE ARTICLES',
+            name: '访问来源',
             type: 'pie',
-            roseType: 'radius',
-            radius: [15, 95],
+            radius: ['30%', '55%'],
             center: ['50%', '38%'],
-            data: [
-              { value: 320, name: 'Industries' },
-              { value: 240, name: 'Technology' },
-              { value: 149, name: 'Forex' },
-              { value: 100, name: 'Gold' },
-              { value: 59, name: 'Forecasts' }
-            ],
+            avoidLabelOverlap: false,
+            label: {
+              show: false,
+              position: 'right'
+            },
+            emphasis: {
+              show:false
+            },
+            labelLine: {
+              show: false
+            },
+            data: this.pieData,
             animationEasing: 'cubicInOut',
             animationDuration: 2600
           }
