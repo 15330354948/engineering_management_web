@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="editAndInfo_container">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="项目信息" name="projectInfo">
         <projectInfo :btnType="btnType" ref="projectInfo"></projectInfo>

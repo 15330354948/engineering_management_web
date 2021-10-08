@@ -22,34 +22,34 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary"  @click="handleQuery">搜索</el-button>
+        <el-button  @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleChildImport" v-hasPermi="['project:Project:import']">子项导入
+        <el-button type="primary" @click="handleChildImport" v-hasPermi="['project:Project:import']">子项导入
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleChildExport" v-hasPermi="['project:Project:export']">子项导出
+        <el-button type="primary" @click="handleChildExport" v-hasPermi="['project:Project:export']">子项导出
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleTestImport" v-hasPermi="['project:Project:import']">测点导入
+        <el-button type="primary" @click="handleTestImport" v-hasPermi="['project:Project:import']">测点导入
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="handleTestExport" v-hasPermi="['project:Project:export']">测点导出
+        <el-button type="primary" @click="handleTestExport" v-hasPermi="['project:Project:export']">测点导出
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
+        <el-button type="danger" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['project:Project:remove']">删除选中</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" size="mini" @click="QRcode" v-hasPermi="['project:Project:export']">二维码下载
+        <el-button type="primary" @click="QRcode" v-hasPermi="['project:Project:export']">二维码下载
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -94,7 +94,7 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog :title="title" :visible.sync="infoOpen" width="80%" append-to-body :before-close="infoHandleClose">
+    <el-dialog :title="title" :visible.sync="infoOpen" width="85%" append-to-body :before-close="infoHandleClose">
       <subProInfo ref="subInfo"></subProInfo>
     </el-dialog>
 
@@ -102,27 +102,27 @@
     <el-dialog :title="title" :visible.sync="editOpen" width="40%" append-to-body :before-close="handleClose">
       <el-form :model="eidtForm" ref="eidtForm" :rules="editRules" :inline="true" label-width="100px">
         <el-form-item label="子项目名称" prop="subProjectName">
-          <el-input v-model="eidtForm.subProjectName" placeholder="请输入测点名称" clearable size="small" />
+          <el-input v-model="eidtForm.subProjectName" placeholder="请输入测点名称" clearable size="small" style="width: 300px" />
         </el-form-item>
         <el-form-item label="类型" prop="type">
-          <el-select v-model="eidtForm.type" placeholder="请选择设备类型" clearable size="small">
+          <el-select v-model="eidtForm.type" placeholder="请选择设备类型" clearable size="small" style="width: 300px">
             <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
               :value="dict.dictValue" />
           </el-select>
         </el-form-item>
         <el-form-item label="工序" prop="working">
-          <el-select v-model="eidtForm.working" placeholder="请选择工序" clearable size="small">
+          <el-select v-model="eidtForm.working" placeholder="请选择工序" clearable size="small"  style="width: 300px">
             <el-option v-for="dict in workingOptions" :key="dict.dictValue" :label="dict.dictLabel"
               :value="dict.dictValue" />
           </el-select>
         </el-form-item>
         <el-form-item label="项目地址" prop="address">
-          <el-cascader style="width:40%" v-model="eidtForm.address" :options="areaOptions"
+          <el-cascader style="width:45%" v-model="eidtForm.address" :options="areaOptions"
             :props="{ checkStrictly: true }" clearable></el-cascader>
-          <el-input style="width:55%;margin-left: 10px" v-model="eidtForm.loction" placeholder="详细地址" />
+          <el-input style="width:50%;margin-left: 10px" v-model="eidtForm.loction" placeholder="详细地址" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="eidtForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small" />
+          <el-input v-model="eidtForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small" style="width: 300px" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">

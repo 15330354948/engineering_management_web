@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="subManagement_container">
     <el-form :model="queryParams" ref="queryParams" :inline="true" label-width="85px">
       <el-form-item prop="pointName">
         <el-input v-model="queryParams.pointName" placeholder="请输入资料名称" clearable size="small" />
@@ -48,7 +48,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="primary" @click="handleDel">删除选中
+        <el-button type="primary" :disabled="multiple" @click="handleDel">删除选中
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -97,8 +97,41 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog :title="title" :visible.sync="infoOpen" width="80%" append-to-body :before-close="infoHandleClose">
+    <el-dialog :title="title" :visible.sync="infoOpen" v-if="infoOpen" width="85%" append-to-body :before-close="infoHandleClose">
       <subProInfo ref="subInfo"></subProInfo>
+    </el-dialog>
+
+    <!-- 创建 -->
+    <el-dialog :title="title" :visible.sync="subOpen" width="40%" append-to-body :before-close="handleClose">
+      <el-form :model="subForm" ref="subForm" :rules="subRules" :inline="true" label-width="100px">
+        <el-form-item label="子项目名称" prop="subProjectName">
+          <el-input v-model="subForm.subProjectName" placeholder="请输入测点名称" clearable size="small" style="width: 300px"/>
+        </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <el-select v-model="subForm.type" placeholder="请选择设备类型" clearable size="small" style="width: 300px">
+            <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
+              :value="dict.dictValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="工序" prop="working">
+          <el-select v-model="subForm.working" placeholder="请选择工序" clearable size="small" style="width: 300px">
+            <el-option v-for="dict in workingOptions" :key="dict.dictValue" :label="dict.dictLabel"
+              :value="dict.dictValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="项目地址" prop="address">
+          <el-cascader style="width:45%" v-model="subForm.address" :options="areaOptions"
+            :props="{ checkStrictly: true }" clearable></el-cascader>
+          <el-input style="width:50%;margin-left: 10px" v-model="subForm.loction" placeholder="详细地址" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="subForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small" style="width: 300px" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="subSubmit">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -106,7 +139,7 @@
 <script>
   import subProInfo from '../subProInfo.vue'
   export default {
-    components: {
+    components: { 
       subProInfo
     },
     props: ["btnType"],
@@ -120,17 +153,28 @@
           pageSize: 10
         },
         form: {},
+        subForm:{},
         areaOptions: [],
         subTypeOption: [],
         stateOption: [],
+
+        // 子项目类型
+        typeOptions:[],
+        workingOptions:[],
         subProjectList: [{
           ProjectId: '11'
         }],
+        // 非单个禁用
+        single: true,
+        // 非多个禁用
+        multiple: true,
         title: "",
         // 施工人员弹出层
         distributionOpen: false,
         // 子项管理弹出层
         infoOpen: false,
+        // 子项新增
+        subOpen: false,
         distributionForm: {},
         distributionrRules: {
           constructionTeam: [{
@@ -138,7 +182,29 @@
             message: "施工组不能为空",
             trigger: "blur"
           }],
-        }
+        },
+        subRules: {
+          subProjectName: [{
+            required: true,
+            message: "子项目名称不能为空",
+            trigger: "blur"
+          }],
+          type: [{
+            required: true,
+            message: "类型不能为空",
+            trigger: "blur"
+          }],
+          working: [{
+            required: true,
+            message: "工序不能为空",
+            trigger: "blur"
+          }],
+          address: [{
+            required: true,
+            message: "地址不能为空",
+            trigger: "blur"
+          }]
+        },
       }
     },
     methods: {
@@ -149,13 +215,18 @@
         this.resetForm("queryParams");
         this.handleQuery();
       },
-      handleAdd() {},
+      handleAdd() {
+        this.title = "子项目新增";
+        this.subOpen = true;
+      },
       subHandleImport() {},
       subHandleExport() {},
       testHandleImport() {},
       testHandleExport() {},
       handleDel() {},
-      QRcode() {},
+      QRcode() {
+        this.$message('二维码功能开发中')
+      },
       // 分配按钮操作
       handleDistribution() {
         this.title = "施工人员分配";
@@ -173,13 +244,33 @@
       // 下载
       handleDownload() {},
       // 删除
-      handleDelete() {},
+      handleDelete(row) {
+        const ProjectIds = row.ProjectId || this.ids;
+        this.$confirm('是否确认删除编号为"' + ProjectIds + '"的数据项?', "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(function () {
+          return delProject(ProjectIds);
+        }).then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
+        })
+      },
       handleSelectionChange(selection) {
-        this.ids = selection.map(item => item.ProjectId)
+        this.ids = selection.map(item => item.ProjectId);
+        this.single = selection.length != 1
+        this.multiple = !selection.length
+      },
+      // 创建项目提交
+      subSubmit(){
+
       },
       cancel() {
         this.distributionOpen = false;
-        // this.resetForm("eidtForm");
+        this.subOpen = false;
+        this.resetForm("subForm");
+        this.resetForm("distributionForm");
       },
       handleClose() {
         this.cancel();

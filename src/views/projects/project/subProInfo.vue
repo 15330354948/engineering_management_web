@@ -10,15 +10,16 @@
           <div class="treeList">
             <el-input class="searchInput" placeholder="输入关键字进行过滤" v-model="filterText">
             </el-input>
-            <el-tree class="filter-tree" :data="treeData" :props="defaultProps" default-expand-all highlight-current
-              :filter-node-method="filterNode" ref="tree" node-key="id">
+            <el-tree class="filter-tree" :data="treeData" :props="defaultProps" @node-click="handleNodeClick"
+              default-expand-all highlight-current :filter-node-method="filterNode" ref="tree" node-key="id"
+              :render-content="renderContent">
             </el-tree>
           </div>
         </div>
       </el-col>
 
       <el-col :span="19">
-        <el-form :model="infoForm" ref="infoForm" :rules="rules" :inline="true" label-width="85px">
+        <el-form :model="infoForm" ref="infoForm" :rules="rules" :inline="true" label-width="100px">
           <el-form-item label="测点名称" prop="pointName">
             <el-input v-model="infoForm.pointName" placeholder="请输入测点名称" clearable size="small"
               :disabled="isDisabled" />
@@ -45,49 +46,15 @@
         </div>
 
         <div class="testInfo" v-if="isDisabled==true && contnentShow == true">
-          <el-collapse v-model="opened">
-            <el-collapse-item name="1">
+          <el-collapse :value="data.map(item => item.id)">
+            <el-collapse-item v-for="(item,index) in data" :key="index" :name="index">
               <template slot="title">
                 <div class="topTilte">
-                  <span class="text">基础定位</span>
+                  <span class="text">{{item.name}}</span>
                   <div class="text">
-                    <span>审核中</span>
+                    <span class="delete" @click="handelDel">删除</span>
+                    <span>{{item.state}}</span>
                   </div>
-                </div>
-              </template>
-              <div class="content"></div>
-              <p>备注：</p>
-            </el-collapse-item>
-            <el-collapse-item name="2">
-              <template slot="title">
-                <div class="topTilte">
-                  <span class="text">基础建设</span>
-                  <div class="text">
-                    <span class="delete">删除</span>
-                    <span>审核中</span>
-                  </div>
-                </div>
-              </template>
-              <div class="content"></div>
-              <p>备注：</p>
-            </el-collapse-item>
-            <el-collapse-item name="3">
-              <template slot="title">
-                <div class="topTilte">
-                  <span class="text">设备安装</span>
-                  <div class="text">
-                    <span class="delete">删除</span>
-                    <span>审核中</span>
-                  </div>
-                </div>
-              </template>
-              <div class="content"></div>
-              <p>备注：</p>
-            </el-collapse-item>
-            <el-collapse-item name="4">
-              <template slot="title">
-                <div class="topTilte">
-                  <span class="text">设备调试</span>
                 </div>
               </template>
               <div class="content"></div>
@@ -102,6 +69,7 @@
 </template>
 
 <script>
+  import TreeRender from '@/components/TreeRender'
   export default {
     watch: {
       filterText(val) {
@@ -116,13 +84,12 @@
             this.contnentShow = false
           }
         },
-
       }
     },
     computed: {
       opened() {
-        return this.activeName.map((g) => {
-          return g
+        return this.data.map((item) => {
+          return item.id
         });
       }
     },
@@ -136,6 +103,7 @@
       return {
         //   手风琴默认展开
         activeName: ['1', '2', '3', '4'],
+        icon: 'el-icon-delete',
         filterText: '',
         // 子项详情
         infoForm: {},
@@ -143,16 +111,40 @@
         contnentShow: false,
         // 设备类型
         devTypeOptions: [],
+        data: [{
+            id: 0,
+            name: '基础定位',
+            state: '审核中'
+          },
+          {
+            id: 1,
+            name: '基础建设',
+            state: '审核中'
+          },
+          {
+            id: 2,
+            name: '设备安装',
+            state: '审核中'
+          },
+          {
+            id: 3,
+            name: '设备调试',
+            state: '审核中'
+          },
+        ],
         // 树形
         treeData: [{
           id: 1,
           label: '一级 1',
+          loading: false
         }, {
           id: 2,
           label: '一级 2',
+          loading: false
         }, {
           id: 3,
           label: '一级 3',
+          loading: false
         }],
         defaultProps: {
           children: 'children',
@@ -194,7 +186,57 @@
         this.resetForm("infoForm");
         this.isDisabled = true;
       },
+      handelDel(event) {
+        event.stopPropagation();
+        this.$confirm('您确定要删除该数据?', {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(function () {
+
+        }).then(() => {
+          this.msgSuccess("删除成功");
+        })
+      },
+      renderContent(h, {
+        node,
+        data,
+        store
+      }) {
+        let that = this; //指向vue
+        return h(TreeRender, {
+          props: {
+            DATA: data, //节点数据
+            NODE: node, //节点内容
+            STORE: store, //完整树形内容
+            ICON: this.icon
+          },
+          on: { //绑定方法
+            nodeDel: ((s, d, n) => that.handleDelete(s, d, n))
+          }
+        });
+      },
+      // 树形点击 
+      handleNodeClick(data) {
+        data.loading = true
+        setTimeout(() => {
+          data.loading = false
+        }, 1000)
+
+      },
+      handleDelete(s, d, n) { //删除节点
+        this.$confirm("是否删除此节点？", "提示", {
+          confirmButtonText: "确认",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          //此处可通过ajax做删除操作
+        }).catch(() => {
+          return false;
+        })
+      }
     }
+
   }
 
 </script>
