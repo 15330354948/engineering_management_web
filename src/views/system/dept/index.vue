@@ -244,7 +244,6 @@ export default {
   methods: {
     getTreeselect() {
       treeselect().then(response => {
-        console.log(response);
         this.deptOptions = response.data;
       });
     },
@@ -260,7 +259,6 @@ export default {
     getList() {
       this.loading = true;
       listDept(this.queryParams).then(response => {
-        console.log(response);
         this.deptList = this.handleTree(response.data, "deptId");
         this.loading = false;
       });
