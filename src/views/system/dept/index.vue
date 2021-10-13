@@ -1,6 +1,30 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+  <div class="app2-container">
+    <div class="left">
+      <div class="head-container">
+          <el-input
+            v-model="deptName"
+            placeholder="请输入部门名称"
+            clearable
+            size="small"
+            prefix-icon="el-icon-search"
+            style="margin-bottom: 20px"
+          />
+        </div>
+        <div class="head-container">
+          <el-tree
+            :data="deptOptions"
+            :props="defaultProps"
+            :expand-on-click-node="false"
+            :filter-node-method="filterNode"
+            ref="tree"
+            default-expand-all
+            @node-click="handleNodeClick"
+          />
+        </div>
+    </div>
+    <div class="right">
+      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
       <el-form-item label="部门名称" prop="deptName">
         <el-input
           v-model="queryParams.deptName"
@@ -81,6 +105,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
 
     <!-- 添加或修改部门对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
@@ -141,12 +166,14 @@
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/dept";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { treeselect } from "@/api/system/dept";
 
 export default {
   name: "Dept",
   components: { Treeselect },
   data() {
     return {
+      deptName: "",
       // 遮罩层
       loading: true,
       // 显示搜索条件
@@ -157,6 +184,10 @@ export default {
       deptOptions: [],
       // 弹出层标题
       title: "",
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
       // 是否显示弹出层
       open: false,
       // 状态数据字典
@@ -196,17 +227,40 @@ export default {
       }
     };
   },
+   watch: {
+    // 根据名称筛选部门树
+    deptName(val) {
+      console.log(val);
+      this.$refs.tree.filter(val);
+    }
+  },
   created() {
     this.getList();
+    this.getTreeselect();
     this.getDicts("sys_normal_disable").then(response => {
       this.statusOptions = response.data;
     });
   },
   methods: {
+    getTreeselect() {
+      treeselect().then(response => {
+        console.log(response);
+        this.deptOptions = response.data;
+      });
+    },
+    handleNodeClick(data) {
+      this.queryParams.deptName = data.label;
+      this.getList();
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
     /** 查询部门列表 */
     getList() {
       this.loading = true;
       listDept(this.queryParams).then(response => {
+        console.log(response);
         this.deptList = this.handleTree(response.data, "deptId");
         this.loading = false;
       });
@@ -257,6 +311,7 @@ export default {
     /** 新增按钮操作 */
     handleAdd(row) {
       this.reset();
+      this.getTreeselect();
       if (row != undefined) {
         this.form.parentId = row.deptId;
       }
@@ -314,3 +369,18 @@ export default {
   }
 };
 </script>
+<style lang="scss">
+  .app2-container {
+    width: 100%;
+    display: flex;
+    padding-top: 20px;
+    .left {
+      padding: 0 20px;
+      min-width: 282px;
+    }
+    .right {
+      flex: 1;
+      margin-left: 10px;
+    }
+  }
+</style>
