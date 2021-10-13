@@ -64,11 +64,10 @@
     </el-row>
 
     <el-table
+    ref="table"
       v-loading="loading"
       :data="deptList"
-      row-key="deptId"
-      default-expand-all
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      row-key="id"
     >
       <el-table-column prop="deptName" label="部门名称" width="260"></el-table-column>
       <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
@@ -188,6 +187,7 @@ export default {
         children: "children",
         label: "label"
       },
+      xdeptList: [],
       // 是否显示弹出层
       open: false,
       // 状态数据字典
@@ -230,7 +230,6 @@ export default {
    watch: {
     // 根据名称筛选部门树
     deptName(val) {
-      console.log(val);
       this.$refs.tree.filter(val);
     }
   },
@@ -248,8 +247,25 @@ export default {
       });
     },
     handleNodeClick(data) {
-      this.queryParams.deptName = data.label;
-      this.getList();
+      if(data.label === '若依科技') {
+        this.queryParams = {}
+        this.getList()
+      } else {
+        if(data.children) {
+          let oldData = this.xdeptList
+          this.deptList = []
+          for(let j=0; j<oldData.length; j++) {
+            for(let i=0; i<data.children.length; i++) {
+              if(oldData[j].deptId === data.children[i].id) {
+                this.$set(this.deptList, i, oldData[j])
+              }
+            }
+          }
+          this.$forceUpdate()
+        } else {
+          this.deptList = []
+        }
+      }
     },
     filterNode(value, data) {
       if (!value) return true;
@@ -259,7 +275,18 @@ export default {
     getList() {
       this.loading = true;
       listDept(this.queryParams).then(response => {
-        this.deptList = this.handleTree(response.data, "deptId");
+
+        this.deptList = []
+        response.data.map((item) => {
+          if(item.deptName !== '若依科技' && item.deptName !== '研发部门' &&
+          item.deptName !=='市场部门' &&
+          item.deptName !=='测试部门'&&
+          item.deptName !=='财务部门'&&
+          item.deptName !=='运维部门') {
+            this.deptList.push(item)
+          }
+        })
+        this.xdeptList = this.deptList
         this.loading = false;
       });
     },
@@ -269,8 +296,8 @@ export default {
         delete node.children;
       }
       return {
-        id: node.deptId,
-        label: node.deptName,
+        id: node.id,
+        label: node.label,
         children: node.children
       };
     },
@@ -315,8 +342,8 @@ export default {
       }
       this.open = true;
       this.title = "添加部门";
-      listDept().then(response => {
-	        this.deptOptions = this.handleTree(response.data, "deptId");
+      treeselect().then(response => {
+	        this.deptOptions = response.data
       });
     },
     /** 修改按钮操作 */
@@ -328,7 +355,7 @@ export default {
         this.title = "修改部门";
       });
       listDeptExcludeChild(row.deptId).then(response => {
-	        this.deptOptions = this.handleTree(response.data, "deptId");
+	        this.deptOptions =response.data
       });
     },
     /** 提交按钮 */
