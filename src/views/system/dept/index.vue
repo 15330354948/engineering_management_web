@@ -394,10 +394,10 @@ export default {
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
   .app2-container {
     width: 100%;
-    display: flex;
+    display: flex !important;
     padding-top: 20px;
     .left {
       padding: 0 20px;
@@ -407,5 +407,11 @@ export default {
       flex: 1;
       margin-left: 10px;
     }
+  }
+ ::v-deep .el-tree-node__content[style="padding-left: 36px;"] {
+    display: none !important;
+  }
+  ::v-deep .el-tree-node__content[style="padding-left: 18px;"] span::before {
+    display: none !important;
   }
 </style>
