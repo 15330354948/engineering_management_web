@@ -1,6 +1,30 @@
 <template>
-  <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+  <div class="app2-container">
+    <div class="left">
+      <div class="head-container">
+          <el-input
+            v-model="deptName"
+            placeholder="请输入部门名称"
+            clearable
+            size="small"
+            prefix-icon="el-icon-search"
+            style="margin-bottom: 20px"
+          />
+        </div>
+        <div class="head-container">
+          <el-tree
+            :data="deptOptions"
+            :props="defaultProps"
+            :expand-on-click-node="false"
+            :filter-node-method="filterNode"
+            ref="tree"
+            default-expand-all
+            @node-click="handleNodeClick"
+          />
+        </div>
+    </div>
+    <div class="right">
+      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
       <el-form-item label="部门名称" prop="deptName">
         <el-input
           v-model="queryParams.deptName"
@@ -40,11 +64,10 @@
     </el-row>
 
     <el-table
+    ref="table"
       v-loading="loading"
       :data="deptList"
-      row-key="deptId"
-      default-expand-all
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      row-key="id"
     >
       <el-table-column prop="deptName" label="部门名称" width="260"></el-table-column>
       <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
@@ -81,6 +104,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
 
     <!-- 添加或修改部门对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
@@ -141,12 +165,14 @@
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/dept";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { treeselect } from "@/api/system/dept";
 
 export default {
   name: "Dept",
   components: { Treeselect },
   data() {
     return {
+      deptName: "",
       // 遮罩层
       loading: true,
       // 显示搜索条件
@@ -157,6 +183,11 @@ export default {
       deptOptions: [],
       // 弹出层标题
       title: "",
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      xdeptList: [],
       // 是否显示弹出层
       open: false,
       // 状态数据字典
@@ -196,18 +227,66 @@ export default {
       }
     };
   },
+   watch: {
+    // 根据名称筛选部门树
+    deptName(val) {
+      this.$refs.tree.filter(val);
+    }
+  },
   created() {
     this.getList();
+    this.getTreeselect();
     this.getDicts("sys_normal_disable").then(response => {
       this.statusOptions = response.data;
     });
   },
   methods: {
+    getTreeselect() {
+      treeselect().then(response => {
+        this.deptOptions = response.data;
+      });
+    },
+    handleNodeClick(data) {
+      if(data.label === '若依科技') {
+        this.queryParams = {}
+        this.getList()
+      } else {
+        if(data.children) {
+          let oldData = this.xdeptList
+          this.deptList = []
+          for(let j=0; j<oldData.length; j++) {
+            for(let i=0; i<data.children.length; i++) {
+              if(oldData[j].deptId === data.children[i].id) {
+                this.$set(this.deptList, i, oldData[j])
+              }
+            }
+          }
+          this.$forceUpdate()
+        } else {
+          this.deptList = []
+        }
+      }
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
     /** 查询部门列表 */
     getList() {
       this.loading = true;
       listDept(this.queryParams).then(response => {
-        this.deptList = this.handleTree(response.data, "deptId");
+
+        this.deptList = []
+        response.data.map((item) => {
+          if(item.deptName !== '若依科技' && item.deptName !== '研发部门' &&
+          item.deptName !=='市场部门' &&
+          item.deptName !=='测试部门'&&
+          item.deptName !=='财务部门'&&
+          item.deptName !=='运维部门') {
+            this.deptList.push(item)
+          }
+        })
+        this.xdeptList = this.deptList
         this.loading = false;
       });
     },
@@ -217,8 +296,8 @@ export default {
         delete node.children;
       }
       return {
-        id: node.deptId,
-        label: node.deptName,
+        id: node.id,
+        label: node.label,
         children: node.children
       };
     },
@@ -257,13 +336,14 @@ export default {
     /** 新增按钮操作 */
     handleAdd(row) {
       this.reset();
+      this.getTreeselect();
       if (row != undefined) {
         this.form.parentId = row.deptId;
       }
       this.open = true;
       this.title = "添加部门";
-      listDept().then(response => {
-	        this.deptOptions = this.handleTree(response.data, "deptId");
+      treeselect().then(response => {
+	        this.deptOptions = response.data
       });
     },
     /** 修改按钮操作 */
@@ -275,7 +355,7 @@ export default {
         this.title = "修改部门";
       });
       listDeptExcludeChild(row.deptId).then(response => {
-	        this.deptOptions = this.handleTree(response.data, "deptId");
+	        this.deptOptions =response.data
       });
     },
     /** 提交按钮 */
@@ -314,3 +394,24 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+  .app2-container {
+    width: 100%;
+    display: flex !important;
+    padding-top: 20px;
+    .left {
+      padding: 0 20px;
+      min-width: 282px;
+    }
+    .right {
+      flex: 1;
+      margin-left: 10px;
+    }
+  }
+ ::v-deep .el-tree-node__content[style="padding-left: 36px;"] {
+    display: none !important;
+  }
+  ::v-deep .el-tree-node__content[style="padding-left: 18px;"] span::before {
+    display: none !important;
+  }
+</style>
