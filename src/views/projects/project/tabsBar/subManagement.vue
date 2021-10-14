@@ -57,7 +57,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="subProjectList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="subProjectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="所属项目" align="center" prop="ProjectId" />
       <el-table-column label="子项名称" align="center" prop="ProjectCode" />
@@ -97,7 +97,8 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog :title="title" :visible.sync="infoOpen" v-if="infoOpen" width="85%" append-to-body :before-close="infoHandleClose">
+    <el-dialog :title="title" :visible.sync="infoOpen" v-if="infoOpen" width="85%" append-to-body
+      :before-close="infoHandleClose">
       <subProInfo ref="subInfo"></subProInfo>
     </el-dialog>
 
@@ -105,7 +106,8 @@
     <el-dialog :title="title" :visible.sync="subOpen" width="40%" append-to-body :before-close="handleClose">
       <el-form :model="subForm" ref="subForm" :rules="subRules" :inline="true" label-width="100px">
         <el-form-item label="子项目名称" prop="subProjectName">
-          <el-input v-model="subForm.subProjectName" placeholder="请输入测点名称" clearable size="small" style="width: 300px"/>
+          <el-input v-model="subForm.subProjectName" placeholder="请输入测点名称" clearable size="small"
+            style="width: 300px" />
         </el-form-item>
         <el-form-item label="类型" prop="type">
           <el-select v-model="subForm.type" placeholder="请选择设备类型" clearable size="small" style="width: 300px">
@@ -125,7 +127,8 @@
           <el-input style="width:50%;margin-left: 10px" v-model="subForm.loction" placeholder="详细地址" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="subForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small" style="width: 300px" />
+          <el-input v-model="subForm.remark" type="textarea" placeholder="请输入测点名称" clearable size="small"
+            style="width: 300px" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -139,7 +142,7 @@
 <script>
   import subProInfo from '../subProInfo.vue'
   export default {
-    components: { 
+    components: {
       subProInfo
     },
     props: ["btnType"],
@@ -153,16 +156,16 @@
           pageSize: 10
         },
         form: {},
-        subForm:{},
+        subForm: {},
         areaOptions: [],
         subTypeOption: [],
         stateOption: [],
 
         // 子项目类型
-        typeOptions:[],
-        workingOptions:[],
+        typeOptions: [],
+        workingOptions: [],
         subProjectList: [{
-          ProjectId: '11'
+          ProjectId: '测试'
         }],
         // 非单个禁用
         single: true,
@@ -240,7 +243,10 @@
         this.infoOpen = true;
       },
       // 修改
-      handleUpdate() {},
+      handleUpdate() {
+        this.title = "子项目修改";
+        this.subOpen = true;
+      },
       // 下载
       handleDownload() {},
       // 删除
@@ -263,7 +269,7 @@
         this.multiple = !selection.length
       },
       // 创建项目提交
-      subSubmit(){
+      subSubmit() {
 
       },
       cancel() {

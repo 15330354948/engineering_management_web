@@ -35,8 +35,7 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" @click="handleAdd"
-          v-hasPermi="['project:Project:add']">新增</el-button>
+        <el-button type="primary" @click="handleAdd" v-hasPermi="['project:Project:add']">新增</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="primary" @click="handleImport" v-hasPermi="['project:Project:import']">导入
@@ -47,17 +46,18 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="primary" :disabled="multiple" @click="handleDelete" v-hasPermi="['project:Project:remove']">
+          删除选中</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="primary" @click="handleChild" v-hasPermi="['project:Project:export']">子项查询
         </el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="primary" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['project:Project:remove']">删除选中</el-button>
-      </el-col>
+
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="ProjectList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="ProjectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="项目编号" align="center" prop="ProjectId" />
       <el-table-column label="项目名称" align="center" prop="ProjectCode" />
@@ -95,19 +95,19 @@
     </el-dialog>
 
     <!-- 修改或详情 -->
-    <el-dialog :title="title" :visible.sync="open" width="70%" append-to-body :before-close="editAndInfoClose">
-      <editAndInfo :btnType="btnType" ref="editAndInfo"></editAndInfo>
+    <el-dialog :title="title" :visible.sync="open" v-if="open" width="70%" append-to-body :before-close="editAndInfoClose">
+      <editAndInfo :btnType="btnType" ref="editAndInfo"></editAndInfo>  
     </el-dialog>
 
     <!-- 人员分配 -->
     <el-dialog :title="title" :visible.sync="personOpen" width="60%" append-to-body>
-      <el-table v-loading="loading" :data="personList">
+      <el-table v-loading="loading" border :data="personList">
         <el-table-column label="单位类别" align="center" prop="category" />
         <el-table-column label="机构名称" align="center" prop="name" />
         <el-table-column label="审批顺序" align="center" prop="order" />
         <el-table-column label="监督人员" align="center" prop="person">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.person" placeholder="请选择创建期次" clearable size="small">
+            <el-select v-model="scope.row.person" placeholder="请选择创建期次" multiple clearable size="small">
               <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
                 :value="dict.dictValue" />
             </el-select>

@@ -5,8 +5,8 @@
         <el-input v-model="queryParams.childName" placeholder="请输入子项名称" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item prop="area" placeholder="请选择区域">
-        <el-cascader v-model="queryParams.area" :options="areaOptions" clearable>
+      <el-form-item prop="area">
+        <el-cascader v-model="queryParams.area"  placeholder="请选择区域" :options="areaOptions" clearable>
         </el-cascader>
       </el-form-item>
       <el-form-item prop="type">
@@ -55,7 +55,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="childList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="childList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="项目编号" align="center" prop="ProjectId" />
       <el-table-column label="项目名称" align="center" prop="ProjectCode" />
@@ -81,7 +81,7 @@
     </el-table>
 
     <!-- 施工人员分配 -->
-    <el-dialog :title="title" :visible.sync="distributionOpen" width="30%" append-to-body :before-close="handleClose">
+    <el-dialog :title="title" :visible.sync="distributionOpen" v-if="distributionOpen" width="30%" append-to-body :before-close="handleClose">
       <el-form ref="distributionForm" :model="distributionForm" :rules="rules" label-width="80px">
         <el-form-item label="施工组" prop="constructionTeam">
           <el-input v-model="distributionForm.constructionTeam" placeholder="请输入施工组" />
@@ -94,7 +94,7 @@
     </el-dialog>
 
     <!-- 详情 -->
-    <el-dialog :title="title" :visible.sync="infoOpen" width="85%" append-to-body :before-close="infoHandleClose">
+    <el-dialog :title="title" :visible.sync="infoOpen" v-if="infoOpen" width="85%" append-to-body :before-close="infoHandleClose">
       <subProInfo ref="subInfo"></subProInfo>
     </el-dialog>
 
