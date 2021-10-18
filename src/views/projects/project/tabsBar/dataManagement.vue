@@ -27,7 +27,7 @@
           </el-form-item>
         </el-form>
 
-        <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" border :data="dataList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column label="项目编号" align="center" prop="ProjectId" />
           <el-table-column label="项目名称" align="center" prop="ProjectCode" />
@@ -74,9 +74,6 @@
         loading: false,
         ids: "",
         title: "",
-        // 施工人员弹出层
-        distributionOpen: false,
-        distributionForm: {}
       }
     },
     methods: {
@@ -123,6 +120,9 @@
   .subList .header .addItem {
     font-weight: normal;
     color: #66b1ff;
+    cursor: pointer;
+  }
+  .el-icon-refresh{
     cursor: pointer;
   }
 

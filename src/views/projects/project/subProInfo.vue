@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="subProInfo">
     <el-row :gutter="24">
       <el-col :span="5">
         <div class="subList">
@@ -78,6 +78,11 @@
       treeData: {
         immediate: true,
         handler(val) {
+          val.forEach(item=>{
+            setTimeout(()=>{
+              item.loading = false
+            },2000)
+          })
           if (val.length > 0) {
             this.contnentShow = true
           } else {
@@ -98,6 +103,9 @@
         // treeBox 元素的ref   value 绑定的node-key
         this.$refs.tree.setCurrentKey(1);
       });
+      for(var i = 0; i<this.treeData.length; i++){
+        this.treeData[0].loading = true;
+      }
     },
     data() {
       return {
@@ -171,7 +179,6 @@
     },
     methods: {
       filterNode(value, data) {
-        console.log(data.label);
         if (!value) return true;
         return data.label.indexOf(value) !== -1;
       },

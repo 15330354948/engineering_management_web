@@ -4,7 +4,8 @@
       <span>{{DATA.label}}</span>
     </span>
     <span class="tree-btn">
-      <i :class="DATA.loading ? 'el-icon-loading' : 'el-icon-delete'" @click.stop="nodeDel(STORE,DATA,NODE)"></i>
+      <i class="el-icon-loading" v-if="DATA.loading"></i>
+      <i class="el-icon-delete" v-else @click.stop="nodeDel(STORE,DATA,NODE)"></i>
     </span>
   </span>
 </template>

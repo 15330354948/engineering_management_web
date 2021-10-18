@@ -19,7 +19,7 @@
           </el-form-item>
         </el-form>
 
-        <el-table v-loading="loading" :data="informationList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" border :data="informationList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column label="合同编号" align="center" prop="contractNo" />
           <el-table-column label="合同名称" align="center" prop="contractName" />
@@ -73,7 +73,7 @@
           </el-col>
 
 
-          <el-table :data="tableList" ref="tb" :row-class-name="rowClassName">
+          <el-table :data="tableList" border ref="tb" :row-class-name="rowClassName">
             <el-table-column label="序号" align="center" prop="xh" width="50"></el-table-column>
             <el-table-column label="更变金额" align="center" prop="changeAmount" width="240">
               <template slot-scope="scope">
@@ -91,7 +91,8 @@
                   </el-row>
                 </div>
                 <div v-show="!scope.row.isSet">
-                  {{tableList[scope.row.xh-1].symbol}}{{tableList[scope.row.xh-1].changeAmount}}</div>
+                  {{tableList[scope.row.xh-1].symbol}}{{tableList[scope.row.xh-1].changeAmount}}
+                  </div>
               </template>
             </el-table-column>
             <el-table-column label="付款日期" align="center" prop="time" width="260">
@@ -127,7 +128,6 @@
 
             <el-table-column label="备注" align="center" prop="remarks" width="260">
               <template slot-scope="scope">
-
                 <div v-show="scope.row.isSet">
                   <el-input v-model="tableList[scope.row.xh-1].remarks" />
                 </div>
@@ -136,7 +136,7 @@
             </el-table-column>
 
             <el-table-column label="操作">
-              <template scope="scope">
+              <template slot-scope="scope">
                 <el-button size="small" type="text" @click="handleEdit(scope.$index, scope.row, true)">
                   {{scope.row.isSet?'保存':"修改"}}</el-button>
                 <el-button size="small" type="text" @click="handleDelete(scope.row.xh-1, scope.row, false)">

@@ -429,7 +429,7 @@
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .el-tabs__content {
     height: 600px;
     overflow-y: scroll;
