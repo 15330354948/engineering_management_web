@@ -11,8 +11,8 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -20,8 +20,6 @@
       <el-col :span="1.5">
         <el-button
           type="primary"
-          icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['project:Project:add']"
         >新增</el-button>
@@ -29,8 +27,6 @@
       <!-- <el-col :span="1.5">
         <el-button
           type="success"
-          icon="el-icon-edit"
-          size="mini"
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['project:Project:edit']"
@@ -39,16 +35,13 @@
       <el-col :span="1.5">
         <el-button
           type="primary"
-          size="mini"
           @click="handleExport"
           v-hasPermi="['project:Project:export']"
         >导出</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['project:Project:remove']"
@@ -60,7 +53,7 @@
     <el-table v-loading="loading" :data="assessmentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="考核名称" align="center" prop="assessmentName" />
-      <el-table-column label="考核模板类型" align="center" prop="type" />
+      <el-table-column label="考核模板类型" align="center" prop="type" :formatter="typeFormat" />
       <el-table-column label="考核项" align="center" prop="num" />
       <el-table-column label="创建时间" align="center" prop="createTime" />
       <el-table-column label="备注" align="center" prop="remarks" />
@@ -108,7 +101,7 @@
         <el-form-item label="考核模板类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择考核模板类型" clearable>
             <el-option
-              v-for="dict in statusOptions"
+              v-for="dict in typeOptions"
               :key="dict.dictValue"
               :label="dict.dictLabel"
               :value="dict.dictValue"
@@ -117,14 +110,14 @@
         </el-form-item>
         <el-form-item label="考核项">
           <el-button size="medium" type="text" @click="handleAddAssessment">添加项</el-button>
-          <el-table :data="form.zdhjcSubAssessments">
+          <el-table :data="form.subAssessments">
             <el-table-column align="center" prop="assessmentId" >
               <template slot="header">
                 <span style="color:red">*  </span>
                 <span>序号</span>
               </template>
               <template slot-scope="scope">
-                <el-input type="number" v-model="form.zdhjcSubAssessments[scope.$index].sort" placeholder="请输入序号" />
+                <el-input type="number" v-model="form.subAssessments[scope.$index].sort" placeholder="请输入序号" />
               </template>
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
@@ -133,7 +126,7 @@
                 <span>考核项目名称</span>
               </template>
               <template slot-scope="scope">
-                <el-input v-model="form.zdhjcSubAssessments[scope.$index].subAssessmentName" placeholder="请输入考核项目名称" />
+                <el-input v-model="form.subAssessments[scope.$index].subAssessmentName" placeholder="请输入考核项目名称" />
               </template>
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
@@ -142,7 +135,7 @@
                 <span>项目分数</span>
               </template>
               <template slot-scope="scope">
-                <el-input type="number" v-model="form.zdhjcSubAssessments[scope.$index].fraction" placeholder="请输入项目分数" />
+                <el-input type="number" v-model="form.subAssessments[scope.$index].fraction" placeholder="请输入项目分数" />
               </template>
             </el-table-column>
             <el-table-column  align="center" prop="assessmentId">
@@ -151,7 +144,7 @@
                 <span>评价标准</span>
               </template>
               <template slot-scope="scope">
-                <el-input v-model="form.zdhjcSubAssessments[scope.$index].standard" placeholder="请输入评价标准" />
+                <el-input v-model="form.subAssessments[scope.$index].standard" placeholder="请输入评价标准" />
               </template>
             </el-table-column>
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -203,8 +196,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      // 状态数据字典
-      statusOptions: [],
+      // 考核模板类型数据字典
+      typeOptions: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -229,8 +222,9 @@ export default {
   },
   created() {
     this.getList();
-    this.getDicts("sys_normal_disable").then(response => {
-      this.statusOptions = response.data;
+    // 查询考核模板类型字典数据
+    this.getDicts("cqndt_assessment_type").then(response => {
+      this.typeOptions = response.data;
     });
   },
   methods: {
@@ -243,9 +237,9 @@ export default {
         this.loading = false;
       });
     },
-    // 考核状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
+    // 考核模板类型字典翻译
+    typeFormat(row, column) {
+      return this.selectDictLabel(this.typeOptions, row.type);
     },
     // 取消按钮
     cancel() {
@@ -258,7 +252,7 @@ export default {
         assessmentId: undefined,
         assessmentName: undefined,
         type: undefined,
-        zdhjcSubAssessments: [],
+        subAssessments: [],
         remarks: undefined
       };
       this.resetForm("form");
@@ -299,31 +293,42 @@ export default {
     submitForm: function() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if(this.form.zdhjcSubAssessments.length>0){
-            this.form.num=this.form.zdhjcSubAssessments.length;
-            this.form.zdhjcSubAssessments.forEach(item => {
-              if(!item.sort){this.msgError("排序不能为空")}
-              else if(!item.subAssessmentName){this.msgError("考核名称不能为空")}
-              else if(!item.fraction){this.msgError("项目分数不能为空")}
-              else if(!item.standard){this.msgError("评价标准不能为空")}
-              else{
-                if (this.form.assessmentId != undefined) {
-                  updateAssessment(this.form).then(response => {
-                    this.msgSuccess("修改成功");
-                    this.open = false;
-                    this.getList();
-                  });
-                } else {
-                  addAssessment(this.form).then(response => {
-                    this.msgSuccess("新增成功");
-                    this.open = false;
-                    this.getList();
-                  });
+          if(this.form.subAssessments.length>0){
+            this.form.num=this.form.subAssessments.length;
+            let flag=null;//考核项是否为空
+            this.form.subAssessments.forEach((item,i) => {
+              if(!item.sort){this.msgError("排序不能为空");flag=false}
+              else if(!item.subAssessmentName){this.msgError("考核名称不能为空");flag=false}
+              else if(item.subAssessmentName && i<this.form.subAssessments.length-1){
+                for (let j = i + 1; j < this.form.subAssessments.length; j++) {
+                    if (item.subAssessmentName === this.form.subAssessments[j].subAssessmentName) {
+                      this.msgError("考核名称不能重复")
+                      flag=false;
+                    }else{
+                      flag=true;
+                    }
                 }
               }
+              else if(!item.fraction){this.msgError("项目分数不能为空");flag=false}
+              else if(!item.standard){this.msgError("评价标准不能为空");flag=false}
+              else{flag=true}
             });
+            if(flag){
+              if (this.form.assessmentId != undefined) {
+                updateAssessment(this.form).then(response => {
+                  this.msgSuccess("修改成功");
+                  this.open = false;
+                  this.getList();
+                });
+              } else {
+                addAssessment(this.form).then(response => {
+                  this.msgSuccess("新增成功");
+                  this.open = false;
+                  this.getList();
+                });
+              }
+            }
           }else{
-            console.log(7)
             this.msgError("请添加考核项")
           }
         }
@@ -331,12 +336,11 @@ export default {
     },
     // 新增考核模板-考核项目新增按钮
     handleAddAssessment(){
-      console.log(77)
-      this.form.zdhjcSubAssessments.push({sort:this.form.zdhjcSubAssessments.length+1,subAssessmentName:'',fraction:'',standard:''})
+      this.form.subAssessments.push({sort:this.form.subAssessments.length+1,subAssessmentName:'',fraction:'',standard:''})
     },
     // 新增规范-所属工序删除按钮
     handleDeleteAssessment(index,row,){
-      this.form.zdhjcSubAssessments.splice(index)
+      this.form.subAssessments.splice(index)
     },
     /** 删除按钮操作 */
     handleDelete(row) {

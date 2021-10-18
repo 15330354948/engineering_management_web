@@ -2,7 +2,7 @@ import request from '@/utils/request'
 // 查询水印列表
 export function listWatermark(query) {
   return request({
-    url: '/monitor/job/list',
+    url: '/backstage/watermark/list',
     method: 'get',
     params: query
   })
@@ -10,7 +10,7 @@ export function listWatermark(query) {
 // 查询水印详细
 export function getWatermark(watermarkId) {
   return request({
-    url: '/system/post/' + watermarkId,
+    url: '/backstage/watermark/' + watermarkId,
     method: 'get'
   })
 }
@@ -18,7 +18,7 @@ export function getWatermark(watermarkId) {
 // 新增水印
 export function addWatermark(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/watermark',
     method: 'post',
     data: data
   })
@@ -27,7 +27,7 @@ export function addWatermark(data) {
 // 修改水印
 export function updateWatermark(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/watermark',
     method: 'put',
     data: data
   })
@@ -36,7 +36,7 @@ export function updateWatermark(data) {
 // 删除水印
 export function delWatermark(watermarkId) {
   return request({
-    url: '/system/post/' + watermarkId,
+    url: '/backstage/watermark/' + watermarkId,
     method: 'delete'
   })
 }
@@ -44,7 +44,7 @@ export function delWatermark(watermarkId) {
 // 导出水印
 export function exportWatermark(query) {
   return request({
-    url: '/system/post/export',
+    url: '/backstage/watermark/export',
     method: 'get',
     params: query
   })
