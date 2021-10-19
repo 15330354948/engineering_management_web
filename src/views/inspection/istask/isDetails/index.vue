@@ -166,6 +166,5 @@ export default {
       }
     }
   }
-  
 }
 </style>

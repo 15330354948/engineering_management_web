@@ -53,7 +53,7 @@
         </el-form>
       </div>
       <!-- 使用该组件获取点击通知 -->
-      <TableSearch :pageSign="pageSign" :hideOpt="['Create', 'Export', 'Delete']"></TableSearch>
+      <TableSearch :pageSign="pageSign" :hideOpt="['Create', 'Export', 'Delete', 'Import']"></TableSearch>
     </div>
 
     <!-- 表格 -->

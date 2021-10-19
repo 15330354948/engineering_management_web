@@ -1,12 +1,16 @@
 <template>
   <div class="isrecord-container">
-    记录
+    <subProInfo ref="subInfo"></subProInfo>
   </div>
 </template>
 
 <script>
+  import subProInfo from '@/views/projects/project/subProInfo.vue'
   export default {
-    name: 'isRecord'
+    name: 'isRecord',
+    components: {
+      subProInfo
+    }
   }
 </script>
 
