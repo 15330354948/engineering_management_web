@@ -1,29 +1,30 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item prop="ProjectCode">
-        <el-input v-model="queryParams.ProjectCode" placeholder="请输入项目编号/名称" clearable size="small"
+      <el-form-item prop="projectCode">
+        <el-input v-model="queryParams.projectCode" placeholder="请输入项目编号/名称" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item prop="area" placeholder="请选择区域">
-        <el-cascader v-model="queryParams.area" :options="areaOptions" clearable>
+      <el-form-item prop="area">
+        <el-cascader v-model="queryParams.area" placeholder="请选择区域" :props="{checkStrictly: true, value: 'id'}"
+          :options="areaOptions" clearable>
         </el-cascader>
       </el-form-item>
-      <el-form-item prop="createPeriod">
-        <el-select v-model="queryParams.createPeriod" placeholder="请选择创建期次" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
+      <el-form-item prop="period">
+        <el-select v-model="queryParams.period" placeholder="请选择创建期次" clearable size="small">
+          <el-option v-for="dict in periodOptions" :key="dict.dictValue" :label="dict.dictLabel"
             :value="dict.dictValue" />
         </el-select>
       </el-form-item>
-      <el-form-item prop="section">
-        <el-select v-model="queryParams.section" placeholder="请选择所属标段" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
+      <el-form-item prop="bidSection">
+        <el-select v-model="queryParams.bidSection" placeholder="请选择所属标段" clearable size="small">
+          <el-option v-for="dict in bidSectionOptions" :key="dict.dictValue" :label="dict.dictLabel"
             :value="dict.dictValue" />
         </el-select>
       </el-form-item>
-      <el-form-item prop="projectStatus">
-        <el-select v-model="queryParams.projectStatus" placeholder="请选择项目状态" clearable size="small">
-          <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
+      <el-form-item prop="projectType">
+        <el-select v-model="queryParams.projectType" placeholder="请选择项目状态" clearable size="small">
+          <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
             :value="dict.dictValue" />
         </el-select>
       </el-form-item>
@@ -59,12 +60,12 @@
 
     <el-table v-loading="loading" border :data="ProjectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="项目编号" align="center" prop="ProjectId" />
-      <el-table-column label="项目名称" align="center" prop="ProjectCode" />
-      <el-table-column label="项目地址" align="center" prop="ProjectName" />
-      <el-table-column label="建设期次" align="center" prop="ProjectSort" />
-      <el-table-column label="所属标段" align="center" prop="ProjectSort" />
-      <el-table-column label="项目状态" align="center" prop="status" :formatter="statusFormat" />
+      <el-table-column label="项目编号" align="center" prop="projectCode" />
+      <el-table-column label="项目名称" align="center" prop="projectName" />
+      <el-table-column label="项目地址" align="center" prop="projectAddress" />
+      <el-table-column label="建设期次" align="center" prop="period" />
+      <el-table-column label="所属标段" align="center" prop="bidSection" />
+      <el-table-column label="项目状态" align="center" prop="projectType" :formatter="typeFormat" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-s-tools" @click="handleDistribution(scope.row)"
@@ -85,7 +86,7 @@
       @pagination="getList" />
 
     <!-- 添加项目对话框 -->
-    <el-dialog :title="title" :visible.sync="addOpen" width="70%" append-to-body :before-close="handleClose">
+    <el-dialog :title="title" :visible.sync="addOpen" v-if="addOpen" width="70%" append-to-body :before-close="handleClose">
       <addForm @closeDialog="closeDialog" ref="child"></addForm>
     </el-dialog>
 
@@ -95,8 +96,9 @@
     </el-dialog>
 
     <!-- 修改或详情 -->
-    <el-dialog :title="title" :visible.sync="open" v-if="open" width="70%" append-to-body :before-close="editAndInfoClose">
-      <editAndInfo :btnType="btnType" ref="editAndInfo"></editAndInfo>  
+    <el-dialog :title="title" :visible.sync="open" v-if="open" width="70%" append-to-body
+      :before-close="editAndInfoClose">
+      <editAndInfo :btnType="btnType" ref="editAndInfo"></editAndInfo>
     </el-dialog>
 
     <!-- 人员分配 -->
@@ -108,7 +110,7 @@
         <el-table-column label="监督人员" align="center" prop="person">
           <template slot-scope="scope">
             <el-select v-model="scope.row.person" placeholder="请选择创建期次" multiple clearable size="small">
-              <el-option v-for="dict in statusOptions" :key="dict.dictValue" :label="dict.dictLabel"
+              <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
                 :value="dict.dictValue" />
             </el-select>
           </template>
@@ -132,7 +134,8 @@
     delProject,
     addProject,
     updateProject,
-    exportProject
+    exportProject,
+    getArea
   } from "@/api/projects/project";
   import addForm from "./addForm.vue"
   import childQuery from './childQuery.vue'
@@ -176,35 +179,39 @@
         personOpen: false,
         // 子项查询弹出层
         childOpen: false,
-        // 状态数据字典
-        statusOptions: [],
+        // 项目状态数据字典
+        typeOptions: [],
+        // 创建期次
+        periodOptions: [],
+        // 所属标段
+        bidSectionOptions: [],
         // 区域
         areaOptions: [],
         // 查询参数
         queryParams: {
           pageNum: 1,
           pageSize: 10,
-          ProjectCode: undefined,
+          projectCode: undefined,
           area: undefined,
-          createPeriod: undefined,
-          section: undefined,
-          projectStatus: undefined
+          period: undefined,
+          bidSection: undefined,
+          projectType: undefined
         },
         // 表单参数
         form: {},
         // 表单校验
         rules: {
-          ProjectName: [{
+          projectName: [{
             required: true,
             message: "项目名称不能为空",
             trigger: "blur"
           }],
-          ProjectCode: [{
+          projectCode: [{
             required: true,
             message: "项目编码不能为空",
             trigger: "blur"
           }],
-          ProjectSort: [{
+          projectSort: [{
             required: true,
             message: "项目顺序不能为空",
             trigger: "blur"
@@ -215,9 +222,16 @@
     },
     created() {
       this.getList();
-      this.getDicts("sys_normal_disable").then(response => {
-        this.statusOptions = response.data;
+      this.getDicts("cqndt_project_type").then(response => {
+        this.typeOptions = response.data;
       });
+      this.getDicts("cqndt_period").then(response => {
+        this.periodOptions = response.data;
+      });
+      this.getDicts("cqndt_bid_section").then(response => {
+        this.bidSectionOptions = response.data;
+      });
+      this.getAreaList();
     },
     methods: {
       /** 查询项目列表 */
@@ -229,9 +243,14 @@
           this.loading = false;
         });
       },
+      getAreaList() {
+        getArea().then(res => {
+          this.areaOptions = res.data;
+        });
+      },
       // 项目状态字典翻译
-      statusFormat(row, column) {
-        return this.selectDictLabel(this.statusOptions, row.status);
+      typeFormat(row, column) {
+        return this.selectDictLabel(this.typeOptions, row.projectType);
       },
       // 取消按钮
       cancel() {
@@ -241,11 +260,11 @@
       // 表单重置
       reset() {
         this.form = {
-          ProjectId: undefined,
-          ProjectCode: undefined,
-          ProjectName: undefined,
-          ProjectSort: 0,
-          status: "0",
+          projectId: undefined,
+          projectCode: undefined,
+          projectName: undefined,
+          projectSort: 0,
+          type: "0",
           remark: undefined
         };
         this.resetForm("form");
@@ -270,11 +289,27 @@
       /** 搜索按钮操作 */
       handleQuery() {
         this.queryParams.pageNum = 1;
+        if (this.queryParams.area) {
+          console.log(111);
+          this.$set(this.queryParams, 'provinceCode', this.queryParams.area[0])
+          this.$set(this.queryParams, 'cityCode', this.queryParams.area[1])
+          this.$set(this.queryParams, 'countyCode', this.queryParams.area[2])
+        }
+        delete this.queryParams.area
         this.getList();
       },
       /** 重置按钮操作 */
       resetQuery() {
         this.resetForm("queryForm");
+        this.queryParams = {
+          pageNum: 1,
+          pageSize: 10,
+          projectCode: undefined,
+          area: undefined,
+          period: undefined,
+          bidSection: undefined,
+          projectType: undefined
+        }
         this.handleQuery();
       },
       // 多选框选中数据

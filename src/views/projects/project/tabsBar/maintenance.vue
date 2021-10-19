@@ -68,7 +68,14 @@
           </el-table>
 
           <h4>维护照片</h4>
-          <div class="photo"></div>
+          <div class="photo">
+            <viewer :images="images" @inited="inited" class="inspectionPhotos-viewer" ref="viewer">
+              <template #default="scope">
+                <img v-for="src in scope.images" :src="src" :key="src" />
+                {{ scope.options }}
+              </template>
+            </viewer>
+          </div>
 
           <h4>备注</h4>
           <el-input type="textarea" v-model="textarea2" readonly>
@@ -100,10 +107,22 @@
 
 <script>
   import TreeRender from '@/components/TreeRender'
+  import "viewerjs/dist/viewer.css";
+  import {
+    component as Viewer
+  } from "v-viewer";
   export default {
     props: ['btnType'],
+    components: {
+      Viewer
+    },
     data() {
       return {
+        images: [
+          "https://picsum.photos/200/200",
+          "https://picsum.photos/300/200",
+          "https://picsum.photos/250/200",
+        ],
         textarea2: "",
         form: {},
         resultOptions: [],
@@ -182,6 +201,9 @@
       }
     },
     methods: {
+      inited(viewer) {
+        this.$viewer = viewer;
+      },
       filterNode(value, data) {
         console.log(data.label);
         if (!value) return true;

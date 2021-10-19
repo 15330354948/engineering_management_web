@@ -11,7 +11,7 @@
       </el-form-item>
       <el-form-item prop="type">
         <el-select v-model="queryParams.type" placeholder="请选择子项类型" clearable size="small">
-          <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
+          <el-option v-for="dict in subOptions" :key="dict.dictValue" :label="dict.dictLabel"
             :value="dict.dictValue" />
         </el-select>
       </el-form-item>
@@ -106,7 +106,7 @@
         </el-form-item>
         <el-form-item label="类型" prop="type">
           <el-select v-model="eidtForm.type" placeholder="请选择设备类型" clearable size="small" style="width: 300px">
-            <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
+            <el-option v-for="dict in subOptions" :key="dict.dictValue" :label="dict.dictLabel"
               :value="dict.dictValue" />
           </el-select>
         </el-form-item>
@@ -201,10 +201,10 @@
         },
 
         // 子项类型
-        typeOptions: [],
+        subOptions:[],
+        // 项目状态
         statusOptions: [],
-        
-        typeOptions: [],
+        // 工序
         workingOptions: [],
         // 区域
         areaOptions: [],
@@ -222,8 +222,8 @@
     },
     created() {
       this.getList();
-      this.getDicts("sys_normal_disable").then(response => {
-        this.statusOptions = response.data;
+      this.getDicts("cqndt_sub_project_type").then(response => {
+        this.subOptions = response.data;
       });
     },
     methods: {
