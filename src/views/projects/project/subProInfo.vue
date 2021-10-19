@@ -225,6 +225,9 @@
       },
       // 树形点击 
       handleNodeClick(data) {
+        this.treeData.forEach(item=>{
+          item.loading = false
+        })
         data.loading = true
         setTimeout(() => {
           data.loading = false

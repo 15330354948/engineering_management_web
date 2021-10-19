@@ -29,7 +29,9 @@
           <el-table-column label="待付金额" align="center" prop="result" />
           <el-table-column label="付款次数" align="center" prop="result" />
           <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-            <template>
+            <template slot-scope="scope">
+              <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)">修改</el-button>
+              <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelBtn(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -92,7 +94,7 @@
                 </div>
                 <div v-show="!scope.row.isSet">
                   {{tableList[scope.row.xh-1].symbol}}{{tableList[scope.row.xh-1].changeAmount}}
-                  </div>
+                </div>
               </template>
             </el-table-column>
             <el-table-column label="付款日期" align="center" prop="time" width="260">
@@ -180,7 +182,9 @@
           label: '-'
         }],
         loading: false,
-        informationList: [],
+        informationList: [{
+          contractNo: "测试"
+        }],
         total: 0,
         ids: '',
         open: false,
@@ -294,8 +298,13 @@
       handleSelectionChange(selection) {
         this.ids = selection.map(item => item.ProjectId)
       },
-      submitForm(){},
-      cancel(){
+      submitForm() {},
+      handleUpdate() {
+        this.title = '投资管理修改'
+        this.open = true;
+      },
+      handleDelBtn() {},
+      cancel() {
         this.resetForm("form");
         this.tableList = []
         this.open = false;
