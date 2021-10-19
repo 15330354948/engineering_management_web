@@ -36,7 +36,7 @@ export function updateAssessment(data) {
 // 删除考核
 export function delAssessment(assessmentId) {
   return request({
-    url: '/backstage/assessment/' + assessmentId,
+    url: '/backstage/assessment/del/' + assessmentId,
     method: 'delete'
   })
 }
