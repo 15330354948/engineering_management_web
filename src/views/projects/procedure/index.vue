@@ -13,43 +13,28 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+            <el-button type="primary" @click="handleQuery">搜索</el-button>
+            <el-button @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
             <el-button
               type="primary"
-              icon="el-icon-plus"
-              size="mini"
               @click="handleAdd"
               v-hasPermi="['project:Project:add']"
             >新增</el-button>
           </el-col>
-          <!-- <el-col :span="1.5">
-            <el-button
-              type="success"
-              icon="el-icon-edit"
-              size="mini"
-              :disabled="single"
-              @click="handleUpdate"
-              v-hasPermi="['project:Project:edit']"
-            >修改</el-button>
-          </el-col> -->
           <el-col :span="1.5">
             <el-button
               type="primary"
-              size="mini"
               @click="handleExport"
               v-hasPermi="['project:Project:export']"
             >导出</el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
+              type="primary"
               :disabled="multiple"
               @click="handleDelete"
               v-hasPermi="['project:Project:remove']"
@@ -57,7 +42,7 @@
           </el-col>
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
-        <el-table v-loading="loading" :data="assessmentList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" border :data="assessmentList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column label="后规项目名称" align="center" prop="assessmentId" />
           <el-table-column label="工序数" align="center" prop="assessmentCode" />

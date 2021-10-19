@@ -30,8 +30,8 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -39,13 +39,11 @@
       <el-col :span="1.5">
         <el-button
           type="primary"
-          icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['system:notice:add']"
         >新增</el-button>
       </el-col>
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button
           type="success"
           icon="el-icon-edit"
@@ -54,12 +52,10 @@
           @click="handleUpdate"
           v-hasPermi="['system:notice:edit']"
         >修改</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['system:notice:remove']"
@@ -68,7 +64,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="noticeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="noticeId" width="100" />
       <el-table-column

@@ -33,13 +33,11 @@
       </el-form-item>
       <el-form-item>
         <el-button
-          type="cyan"
-          icon="el-icon-search"
-          size="mini"
+          type="primary"
           @click="handleQuery"
           >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
+        <el-button @click="resetQuery"
           >重置</el-button
         >
       </el-form-item>
@@ -54,7 +52,7 @@
 
     <el-table
       v-loading="loading"
-      :data="configList"
+      :data="configList" border
     >
       <el-table-column label="预警提醒名称" align="center" prop="configId" />
       <el-table-column label="类型" align="center" prop="configCode" />

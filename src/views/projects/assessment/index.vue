@@ -24,14 +24,6 @@
           v-hasPermi="['project:Project:add']"
         >新增</el-button>
       </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="success"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['project:Project:edit']"
-        >修改</el-button>
-      </el-col> -->
       <el-col :span="1.5">
         <el-button
           type="primary"
@@ -50,7 +42,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="assessmentList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="assessmentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="考核名称" align="center" prop="assessmentName" />
       <el-table-column label="考核模板类型" align="center" prop="type" :formatter="typeFormat" />

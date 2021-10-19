@@ -50,17 +50,15 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['monitor:logininfor:remove']"
@@ -68,18 +66,14 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           @click="handleClean"
           v-hasPermi="['monitor:logininfor:remove']"
         >清空</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="warning"
-          icon="el-icon-download"
-          size="mini"
+          type="primary"
           @click="handleExport"
           v-hasPermi="['system:logininfor:export']"
         >导出</el-button>
@@ -87,7 +81,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="list" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="访问编号" align="center" prop="infoId" />
       <el-table-column label="用户名称" align="center" prop="userName" />

@@ -50,8 +50,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -59,13 +59,11 @@
       <el-col :span="1.5">
         <el-button
           type="primary"
-          icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['system:role:add']"
         >新增</el-button>
       </el-col>
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button
           type="success"
           icon="el-icon-edit"
@@ -74,12 +72,10 @@
           @click="handleUpdate"
           v-hasPermi="['system:role:edit']"
         >修改</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['system:role:remove']"
@@ -87,9 +83,7 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="warning"
-          icon="el-icon-download"
-          size="mini"
+          type="primary"
           @click="handleExport"
           v-hasPermi="['system:role:export']"
         >导出</el-button>
@@ -97,7 +91,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="roleList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="角色编号" prop="roleId" width="120" />
       <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />

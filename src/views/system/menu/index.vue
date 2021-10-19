@@ -47,6 +47,7 @@
     <el-table
       v-loading="loading"
       :data="menuList"
+      border
       row-key="menuId"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >

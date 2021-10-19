@@ -48,8 +48,8 @@
             </el-select>
             </el-form-item>
             <el-form-item>
-            <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+            <el-button type="primary" @click="handleQuery">搜索</el-button>
+            <el-button  @click="resetQuery">重置</el-button>
             </el-form-item>
         </el-form>
 
@@ -57,8 +57,6 @@
             <el-col :span="1.5">
             <el-button
                 type="primary"
-                icon="el-icon-plus"
-                size="mini"
                 :disabled="multiple"
                 @click="handleRelations"
                 v-hasPermi="['project:Project:add']"
@@ -67,7 +65,7 @@
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getProjectList"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" border :data="projectList" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center" />
             <el-table-column label="项目编号" align="center" prop="ProjectId" />
             <el-table-column label="项目名称" align="center" prop="ProjectCode" />
