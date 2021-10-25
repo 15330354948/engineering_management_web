@@ -326,7 +326,7 @@ export default {
       let whichOne = Object.entries(this.slotStatus)[0][0];
       let ref = this.$refs[whichOne];
       let formVal = this.$refs[whichOne][whichOne + "Form"];
-      console.log(whichOne);
+      // console.log(whichOne);
       if (ref.formInvalid) {
         if (whichOne === "mtemplateEdit") {
           // 修改的逻辑
@@ -345,6 +345,7 @@ export default {
                 formVal["subProject" + key.split("mPt")[1]];
               subInsObj.subInspectionRequirement =
                 formVal["mPt" + key.split("mPt")[1]];
+              subInsObj.inspectionId = formVal.inspectionId
               subInspectionTemplates.push(subInsObj);
             }
           }

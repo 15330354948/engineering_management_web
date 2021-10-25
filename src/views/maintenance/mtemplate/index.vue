@@ -3,6 +3,11 @@
     <!-- 弹窗组件 -->
     <Popups @dosave="saveInfo" @dclose="handleDialogClose" ref="popups" :dialogTitle="dialogInfo.dialogTitle" :dialogShow="dialogInfo.dialogShow" :dialogWidth="dialogInfo.dialogWidth">
       <mtemplateEdit ref="mtemplateEdit" :mtemplateEdit="mtemplateEdit" v-if="slotStatus.mtemplateEdit"></mtemplateEdit>
+       <CopyTemplate
+        ref="copytemplate"
+        :templateName="templateName"
+        v-if="slotStatus.copytemplate"
+      ></CopyTemplate>
     </Popups>
     <!-- 顶部搜索 -->
     <div class="mtemplate-header-container">
@@ -38,13 +43,13 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column prop="name" label="维护模板" width="320">
+        <el-table-column prop="maintainName" label="维护模板" width="320">
         </el-table-column>
-        <el-table-column prop="name" label="维护项" width="320">
+        <el-table-column prop="num" label="维护项" width="320">
         </el-table-column>
-        <el-table-column prop="name" label="创建时间" width="320">
+        <el-table-column prop="createTime" label="创建时间" width="320">
         </el-table-column>
-        <el-table-column prop="name" label="备注" width="320">
+        <el-table-column prop="remarks" label="备注" width="320">
         </el-table-column>
         <el-table-column
           label="操作"
@@ -61,7 +66,7 @@
 
     <!-- 底部分页 -->
     <div class="bottom-pagination">
-      <Pagination :total="100"></Pagination>
+      <Pagination @pagination="handlePagination" :total="page.total" :limit="page.limit"></Pagination>
     </div>
   </div>
 </template>
@@ -70,12 +75,24 @@
 import TableSearch from "@/components/TableSearch";
 import Popups from "../components/popups/index.vue"
 import mtemplateEdit from "./mtemplateEdit/index.vue"
+import CopyTemplate from "./copyTemplate/index";
+
+import {
+  maintTmplLst,
+  maintDetails,
+  modifyMaintDetails,
+  addMaintDetails,
+  DeleteMaintDetails,
+  btchDeletionMaintDetails,
+  ExportMaintDetails
+} from "@/api/maintenance/index.js";
 export default {
   name: "MTemplate",
   components: {
     TableSearch,
     Popups,
-    mtemplateEdit
+    mtemplateEdit,
+    CopyTemplate
   },
   data() {
     return {
@@ -84,6 +101,15 @@ export default {
       mtemplateForm: {
         // 维护模板名称
         templateName: ""
+      },
+      query: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+      templateName: "",
+      page: {
+        total: 0,
+        limit: 10,
       },
       checkPersonList: [
         {
@@ -96,18 +122,7 @@ export default {
         },
       ],
       // 表格数据
-      tableData: [
-        {
-          date: "测试日期1",
-          name: "测试1",
-          address: "测试地址1",
-        },
-        {
-          date: "测试日期2",
-          name: "测试2",
-          address: "测试地址2",
-        }
-      ],
+      tableData: [],
       // 表格当前选中项
       selectedItem: [],
       // 弹窗相关
@@ -126,6 +141,22 @@ export default {
     };
   },
   methods: {
+    // 分页查询
+    async getList(query) {
+      const result = await maintTmplLst(query);
+      this.page.total = result.rows.length;
+      this.tableData = result.rows;
+    },
+    // 分页处理
+    async handlePagination(info) {
+      // console.log("分页信息为", info);
+      let { page, limit } = info;
+      this.page.limit = limit;
+      this.query.pageNum = page;
+      this.query.pageSize = limit;
+      this.getList(this.query);
+      // 抽出来去请求一个整体的
+    },
     // 多选处理
     handleSelectionChange(selection) {
       this.selectedItem = selection;
@@ -149,41 +180,102 @@ export default {
         type: "warning",
       }).then(() => {
         // 执行删除逻辑
-        console.log("要删除的信息", data)
-        this.tableData = []
+        if (config) {
+            // console.log(config.selectedItem)
+            let maintainIds = config.selectedItem.map((item) => {
+              return item.maintainId;
+            });
+            // console.log(maintainIds);
+            btchDeletionMaintDetails(maintainIds);
+          } else {
+            // 执行单选删除逻辑
+            DeleteMaintDetails(data.maintainId);
+          }
+          // 新增和修改后刷新界面
+          this.msgSuccess("删除成功");
+          setTimeout(() => {
+            this.getList();
+          }, 100);
       }).catch(() => {
-        console.log("取消删除")
       });
     },
     // 修改
-    handleMEdit(row) {
-      console.log("这一行内容的信息", row)
+    async handleMEdit(row) {
+      this.mtemplateEdit = {};
+      const { data: result } = await maintDetails(row.maintainId);
+      let oldObj = {};
+      for (let i = 0; i < result.subMaintainTemplates.length; i++) {
+        oldObj["subMaintainId" + (i + 1)] =
+          result.subMaintainTemplates[i].subMaintainId;
+        oldObj["subProject" + (i + 1)] =
+          result.subMaintainTemplates[i].subMaintainName;
+        oldObj["mPt" + (i + 1)] =
+          result.subMaintainTemplates[i].subMaintainRequirement;
+      }
       this.mtemplateEdit = {
-        templateName: "测试",
-        deviceType: "beijing",
-        subProject1: "beijing",
-        subProject2: "shanghai",
-        subProject3: "shanghai",
-        mPt1: "1",
-        mPt2: "2",
-        mPt3: "3",
-      }
+        ...oldObj,
+        maintainId: result.maintainId,
+        remark: result.remarks,
+        templateName: result.maintainName,
+        deviceType: result.equipmentType
+      };
       this.slotStatus = {
-        mtemplateEdit: true
-      }
+        mtemplateEdit: true,
+      };
       this.dialogInfo = {
         dialogShow: true,
-        dialogTitle: "维护模板修改",
-        dialogWidth: "55%"
-      }
+        dialogTitle: "巡检模板修改",
+        dialogWidth: "55%",
+      };
     },
     // 删除
     handleMDelete(row) {
-      console.log("这一行的信息", row)
       this.handleDelete(undefined, row) 
     },
     // 复制
-    handleMCopy(row) {
+    async handleMCopy(row) {
+      const { data: result } = await maintDetails(row.maintainId);
+      let oldObj = {};
+      for (let i = 0; i < result.subMaintainTemplates.length; i++) {
+        oldObj["subProject" + (i + 1)] =
+          result.subMaintainTemplates[i].subMaintainName;
+        oldObj["mPt" + (i + 1)] =
+          result.subMaintainTemplates[i].subMaintainRequirement;
+      }
+      let tempObj = {
+        ...oldObj,
+        maintainId: result.maintainId,
+        remark: result.remarks,
+        templateName: result.maintainName,
+        equipmentType: result.equipmentType
+      };
+      const subMaintainTemplates = [];
+      for (let key in tempObj) {
+        if (key.startsWith("mPt")) {
+          // console.log(key);
+          let subInsObj = {};
+          if ("subMaintainId" + key.split("mPt")[1] in tempObj) {
+            subInsObj.subMaintainId =
+              tempObj["subMaintainId" + key.split("mPt")[1]];
+          }
+          subInsObj.subMaintainName =
+            tempObj["subProject" + key.split("mPt")[1]];
+          subInsObj.subMaintainRequirement =
+            tempObj["mPt" + key.split("mPt")[1]];
+          subMaintainTemplates.push(subInsObj);
+        }
+      }
+      let cqndtInspectionTemplate = {
+        remarks: tempObj.remark,
+        maintainName: tempObj.templateName,
+        subMaintainTemplates,
+        equipmentType: tempObj.equipmentType
+      };
+      this.cpyTheRslt = cqndtInspectionTemplate
+      this.templateName = tempObj.templateName + "复制";
+      this.slotStatus = {
+        copytemplate: true,
+      };
       this.dialogInfo = {
         dialogShow: true,
         dialogTitle: "维护模板复制",
@@ -191,35 +283,88 @@ export default {
       }
     },
     // 保存
-    saveInfo() {
+    async saveInfo() {
       // 对应的表单数据
       let whichOne = Object.entries(this.slotStatus)[0][0]
       let ref = this.$refs[whichOne]
       let formVal = this.$refs[whichOne][whichOne+'Form']
       if(ref.formInvalid) {
-        // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
-        console.log("保存值为:", formVal)
-        this.handleDialogClose()
+        if (whichOne === "mtemplateEdit") {
+          // 修改的逻辑
+          // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
+          console.log("保存值为:", formVal)
+          const subMaintainTemplates = [];
+          for (let key in formVal) {
+            if (key.startsWith("mPt")) {
+              // console.log(key);
+              let subInsObj = {};
+              if ("subMaintainId" + key.split("mPt")[1] in formVal) {
+                subInsObj.subMaintainId =
+                  formVal["subMaintainId" + key.split("mPt")[1]];
+              }
+              subInsObj.subMaintainName =
+                formVal["subProject" + key.split("mPt")[1]];
+              subInsObj.subMaintainRequirement =
+                formVal["mPt" + key.split("mPt")[1]];
+              subInsObj.maintainId = formVal.maintainId
+              subMaintainTemplates.push(subInsObj);
+            }
+          }
+          let cqndtInspectionTemplate = {};
+          if (formVal.maintainId) {
+            // 修改
+            cqndtInspectionTemplate = {
+              maintainId: formVal.maintainId,
+              remarks: formVal.remark,
+              maintainName: formVal.templateName,
+              equipmentType:formVal.deviceType,
+              subMaintainTemplates,
+            };
+            const result = await modifyMaintDetails(cqndtInspectionTemplate);
+            // console.log('修改结果', result);
+            this.msgSuccess(result.msg);
+          } else {
+            cqndtInspectionTemplate = {
+              remarks: formVal.remark,
+              maintainName: formVal.templateName,
+              subMaintainTemplates,
+              equipmentType:formVal.deviceType,
+            };
+            const result = await addMaintDetails(cqndtInspectionTemplate);
+            this.msgSuccess(result.msg);
+          }
+        }
+        if (whichOne === "copytemplate") {
+          this.cpyTheRslt.maintainName = formVal.templateName
+          addMaintDetails(this.cpyTheRslt)
+        }  
+        // 刷新界面
+        setTimeout(() => {
+          this.getList();
+          this.handleDialogClose();
+        }, 100);
       }
     }
   },
   created() {
+    this.getList(this.query);
     this.$bus
       .$off(`${this.pageSign}SearchClick`)
       .$on(`${this.pageSign}SearchClick`, () => {
-        console.log("已监听到搜索");
-        console.log(this.mtemplateForm);
+        let query = {};
+        query.maintainName = this.mtemplateForm.templateName;
+        this.getList(query);
       });
     this.$bus
       .$off(`${this.pageSign}ResetClick`)
       .$on(`${this.pageSign}ResetClick`, () => {
-        console.log("已监听到重置");
+        // console.log("已监听到重置");
         this.mtemplateForm = {};
+        this.getList();
       });
     this.$bus
       .$off(`${this.pageSign}CreateClick`)
       .$on(`${this.pageSign}CreateClick`, () => {
-        console.log("已监听到创建");
         // 清除传入
         this.mtemplateEdit = {}
         this.slotStatus = {
@@ -233,8 +378,9 @@ export default {
       });
     this.$bus
       .$off(`${this.pageSign}ExportClick`)
-      .$on(`${this.pageSign}ExportClick`, () => {
-        this.msgInfo("功能确定中");
+      .$on(`${this.pageSign}ExportClick`, async() => {
+        const result = await ExportMaintDetails();
+        this.download(result.msg);
       });
     this.$bus
       .$off(`${this.pageSign}DeleteClick`)
