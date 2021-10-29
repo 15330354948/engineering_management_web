@@ -66,6 +66,13 @@ Vue.prototype.msgError = function (msg) {
 Vue.prototype.msgInfo = function (msg) {
   this.$message.info(msg);
 }
+Vue.prototype.msgWarn = function (msg) {
+  this.$message({
+    showClose: true,
+    message: msg,
+    type: "warning"
+  });
+}
 
 // 全局组件挂载
 Vue.component('Pagination', Pagination)
