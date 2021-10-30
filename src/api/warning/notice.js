@@ -2,7 +2,7 @@ import request from '@/utils/request'
 // 查询通知发布列表
 export function listNotice(query) {
   return request({
-    url: '/monitor/job/list',
+    url: '/backstage/message/list',
     method: 'get',
     params: query
   })
@@ -10,7 +10,7 @@ export function listNotice(query) {
 // 查询通知发布详细
 export function getNotice(noticeId) {
   return request({
-    url: '/system/post/' + noticeId,
+    url: '/backstage/message/get/' + noticeId,
     method: 'get'
   })
 }
@@ -18,7 +18,7 @@ export function getNotice(noticeId) {
 // 新增通知发布
 export function addNotice(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/message',
     method: 'post',
     data: data
   })
@@ -27,7 +27,7 @@ export function addNotice(data) {
 // 修改通知发布
 export function updateNotice(data) {
   return request({
-    url: '/system/post',
+    url: '/backstage/message',
     method: 'put',
     data: data
   })
@@ -36,7 +36,7 @@ export function updateNotice(data) {
 // 删除通知发布
 export function delNotice(noticeId) {
   return request({
-    url: '/system/post/' + noticeId,
+    url: '/backstage/message/del/' + noticeId,
     method: 'delete'
   })
 }
@@ -44,8 +44,26 @@ export function delNotice(noticeId) {
 // 导出通知发布
 export function exportNotice(query) {
   return request({
-    url: '/system/post/export',
+    url: '/backstage/message/export',
     method: 'get',
     params: query
+  })
+}
+
+// 获取单位
+export function listCompany(query) {
+  return request({
+    url: '/system/dept/listPage',
+    method: 'get',
+    params: query
+  })
+}
+
+// 通知发送
+export function sendNotice(data) {
+  return request({
+    url: '/backstage/message/send',
+    method: 'post',
+    data:data
   })
 }

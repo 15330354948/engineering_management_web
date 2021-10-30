@@ -121,14 +121,14 @@
     </el-dialog>
     <!-- 关联项目 -->
     <el-dialog :title="titleRelation" v-if="openRelation" :visible.sync="openRelation" width="1200px" append-to-body>
-      <projectDialog @closeDialog="closeDialog" :areaList="areaList" ref="son"></projectDialog>
+      <projectDialog @closeDialog="closeDialog" :watermarkId="watermarkId" :areaList="areaList" ref="son"></projectDialog>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listWatermark, getWatermark, delWatermark, addWatermark, updateWatermark, exportWatermark } from "@/api/projects/watermark";
-import { listArea} from "@/api/area.js"
+import { listArea} from "@/api/common.js"
 import projectDialog from "./projectDialog.vue"
 export default {
   name: "Watermark",
@@ -178,6 +178,7 @@ export default {
         ],
       },
       areaList:[],//区域列表
+      watermarkId:undefined,//水印id
     };
   },
   created() {
@@ -301,8 +302,8 @@ export default {
     // 关联项目按钮
     handleRelation(row){
       this.openRelation=true;
-      console.log(222222)
-      this.titleRelation='水印：' + row.name + '  正在分配项目'
+      this.watermarkId=row.watermarkId;
+      this.titleRelation='水印：' + row.watermarkName + '  正在分配项目'
     },
     /** 提交按钮 */
     submitForm: function() {

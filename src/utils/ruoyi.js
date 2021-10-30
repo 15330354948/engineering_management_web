@@ -56,17 +56,17 @@ export function resetForm(refName) {
 // 添加日期范围
 export function addDateRange(params, dateRange,dateRange2) {
 	var search = params;
-	search.beginTime = "";
-	search.endTime = "";
-	search.beginTime2 = "";
-	search.endTime2 = "";
+	search.beginTime = undefined;
+	search.endTime = undefined;
+	search.publisherStartTime = undefined;
+	search.publisherEndTime = undefined;
 	if (null != dateRange && '' != dateRange) {
 		search.beginTime = dateRange[0];
 		search.endTime = dateRange[1];
 	}
 	if (null != dateRange2 && '' != dateRange2) {
-		search.beginTime2 = dateRange2[0];
-		search.endTime2 = dateRange2[1];
+		search.publisherStartTime = dateRange2[0];
+		search.publisherEndTime = dateRange2[1];
 	}
 	return search;
 }
