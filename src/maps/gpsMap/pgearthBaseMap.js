@@ -70,7 +70,7 @@ export default {
       container: id,
       baseMap: new WMTSLayer({
         // url: "http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=1d109683f4d84198e37a38c442d68311",
-        url: "http://t0.tianditu.gov.cn/DataServer?T=cva_w&x=3261&y=1694&l=12&tk=1d109683f4d84198e37a38c442d68311",
+        url: "http://t0.tianditu.gov.cn/vec_w/wmts?tk=1d109683f4d84198e37a38c442d68311",
         title: 'tdt',
         tileMatrixSet: 'tdt1',
         id: id
@@ -141,7 +141,7 @@ export default {
   },
 
   fly(e) {
-      this.goView({longitude: e.longitude, latitude: e.latitude, height: 200 })
+      this.goView({longitude: e.longitude, latitude: e.latitude, height: 2000 })
     
   },
 

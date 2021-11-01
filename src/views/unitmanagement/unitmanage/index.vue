@@ -73,7 +73,7 @@
           </el-table-column>
           <el-table-column prop="deptTypeName" label="类别" width="170">
           </el-table-column>
-          <el-table-column prop="address" label="地址" width="170">
+          <el-table-column prop="addresss" label="地址" width="170">
           </el-table-column>
           <el-table-column label="资质" width="170">
             <template slot-scope="scope">
@@ -87,7 +87,7 @@
           </el-table-column>
           <el-table-column prop="leader" label="人员" width="170">
           </el-table-column>
-          <el-table-column prop="remark" label="备注" width="170">
+          <el-table-column prop="remake" label="备注" width="170">
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
@@ -188,7 +188,6 @@
               :on-change="changeUpload"
               :http-request="uploadImg"
               :show-file-list="false"
-              :limit="1"
             >
               <img v-if="imageUrl" :src="imageUrl" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -275,7 +274,6 @@
               :on-change="changeUpload2"
               :http-request="uploadImg"
               :show-file-list="false"
-              :limit="1"
             >
               <img v-if="imageUrlEdit" :src="imageUrlEdit" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -352,32 +350,32 @@
               border
               style="width: 100%; height:300px; overflow: auto">
               <el-table-column
-                prop="date"
+                type="index"
                 label="序号"
-                width="180">
+                width="50">
               </el-table-column>
               <el-table-column
-                prop="name"
+                prop="fileName"
                 label="资质文件"
                 width="180">
               </el-table-column>
               <el-table-column
-                prop="资质等级"
-                label="地址">
+                prop="gradecn"
+                label="资质等级">
               </el-table-column>
               <el-table-column label="操作">
                 <template slot-scope="scope">
                   <el-button
-                    @click="handleEdit(scope.row)"
+                    @click="downloadFile(scope.row)"
                     type="text"
-                    icon="el-icon-edit"
-                    >修改</el-button
+                    icon="el-icon-bottom"
+                    ></el-button
                   >
                   <el-button
-                    @click="handleDelete(scope.row)"
+                    @click="deleteFile(scope.row)"
                     type="text"
                     icon="el-icon-delete"
-                    >删除</el-button
+                    ></el-button
                   >
               </template>
             </el-table-column>
@@ -425,7 +423,7 @@
               action="/"
               :on-change="changeFiles"
               :http-request="updatingFiles"
-              :show-file-list="true">
+              :show-file-list="isSHow">
               <el-button>添加附件</el-button>
             </el-upload>
           </div>
@@ -454,7 +452,7 @@ import gpsMap from "@/maps/gpsMap/index"
 import TableSearch from "@/components/TableSearch";
 import PG from '@/maps/gpsMap/pgearthBaseMap.js'
 import Popups from "@/views/maintenance/components/popups/index.vue";
-import { queryUnitCatg,qualificationUploadLstQuery,multChoiceDeleteUnit,deleteUnit,EditUnit,getAvatar,getCatg,newUnit,uploadImg,queryLatAndLon, queryUnitList } from "@/api/unitmanage/index.js";
+import { queryUnitCatg,qualificationDownload,qualificationDelete,qualificationUpload,qualificationUploadLstQuery,multChoiceDeleteUnit,deleteUnit,EditUnit,getAvatar,getCatg,newUnit,uploadFile,uploadImg,queryLatAndLon, queryUnitList } from "@/api/unitmanage/index.js";
 export default {
   name: "unitmanage",
   components: {
@@ -472,6 +470,7 @@ export default {
       assetClasSelection: '',
       // 页面标志
       pageSign: "addrbook",
+      companyId: 0,
       // 标题
       leftTitle: "所属单位",
       // 搜索的值
@@ -480,16 +479,21 @@ export default {
       insidelatitude: '',
       assetClas: [
         {
-          label: '甲',
-          value: '甲'
+          label: '甲级',
+          value: '1'
         },
         {
-          label: '乙',
-          value: '乙'
+          label: '乙级',
+          value: '2'
+        },
+        {
+          label: '丙级',
+          value: '3'
         },
       ],
       // 左栏的数据列表
       dataList: [],
+      isSHow: false,
       // 当前选择单位
       currentlySelectedUnit: "",
       // 基础对比库
@@ -550,13 +554,50 @@ export default {
   },
   methods: {
     // 资质保存
-    saveQualification() {
-      console.log("保存的文件是", this.qualificationFile)
-      console.log("保存的资质等级是", this.assetClasSelection)
+    async saveQualification() {
+      let saveFileId = []
+      let fileNmMapping = {}
+      let companyQualifications = []
+      for(let item of this.qualificationFile) {
+        var formData = new FormData();
+        formData.append("file",item.raw)
+        const result = await uploadFile(formData)
+        companyQualifications.push({
+          companyId: this.companyId,
+          fileId: result.data.fileId,
+          fileName: result.data.original,
+          grade: this.assetClasSelection
+        })
+        // img_id = fileId
+        // saveFileId.push(fileId)
+      }
+      
+      console.log(companyQualifications)
+      // console.log("公司id", this.companyId)
+      // console.log("文件",saveFileId.join(','))
+      // console.log("保存的资质等级是", this.assetClasSelection)
+
+      await qualificationUpload(
+        companyQualifications
+     )
+      const result = await qualificationUploadLstQuery(this.companyId)
+      this.qualificationFormData = result.data.map((item) => {
+        if (item.grade === '1') {
+          item.gradecn = '甲级'
+        } else if (item.grade === '2') {
+          item.gradecn = '乙级'
+        } else {
+          item.gradecn = '丙级'
+        }
+        return item
+      })
+      this.qualificationFormData = result.data
+      this.qualificationDialog = false
     },
     // 文件选中
     changeFiles(file, fileList){
       this.qualificationFile = fileList
+      this.isSHow = true
     },
     // 文件上传
     updatingFiles() {
@@ -565,6 +606,9 @@ export default {
     // 开启资质dialog
     addQualification() {
       this.qualificationDialog = true
+      this.qualificationFile = []
+      this.assetClasSelection = '1'
+      this.isSHow = false
     },
     async handleEdit(row) {
       if(row.imgId) {
@@ -667,6 +711,7 @@ export default {
       }
     },
     changeUpload2(file, filelist) {
+      console.log("helloworld");
       console.log(file, filelist);
       this.file = filelist[0].raw;
       let fileName = file.name;
@@ -712,7 +757,12 @@ export default {
       const result = await queryUnitList(query);
       console.log(result)
       this.page.total = result.total;
-      this.tableData = result.rows;
+      this.tableData = result.rows.map((item) => {
+        item.remake = item.remark
+        item.addresss = item.address
+        return item
+      })
+     
     },
     // 分页处理
     async handlePagination(info) {
@@ -726,9 +776,19 @@ export default {
     },
     // 资质上传
     async handleUpload(row) {
+      this.companyId = row.deptId
       console.log("这一行的数据", row);
       const result = await qualificationUploadLstQuery(row.deptId)
-      // this.qualificationFormData = result.
+      this.qualificationFormData = result.data.map((item) => {
+        if (item.grade === '1') {
+          item.gradecn = '甲级'
+        } else if (item.grade === '2') {
+          item.gradecn = '乙级'
+        } else {
+          item.gradecn = '丙级'
+        }
+        return item
+      })
       this.qualificationUpload = true
     },
     // 通用删除
@@ -765,6 +825,48 @@ export default {
         .catch(() => {
           console.log("取消删除");
         });
+    },
+    // 文件下载
+    async downloadFile(row) {
+     
+      const {data} = await qualificationDownload(row.fileId)
+      console.log('下载的文件的信息', data)
+      if(row.fileName.split('.')[1] === 'txt') {
+        // console.log('txt')
+        // var element = document.createElement('a');
+        // element.setAttribute('href', data.url);
+        // element.setAttribute('download', data.original);
+        // console.log(element)
+        // element.style.display = 'none';
+        // document.body.appendChild(element);
+        // element.click();
+        // document.body.removeChild(element);
+        this.msgWarn('暂不支持txt文件下载')
+      } else {
+        let link = document.createElement("a");
+        //  link.href = window.URL.createObjectURL(data.url);
+        link.href = data.url;
+        link.download = data.original;   
+        link.click();
+      }
+     
+    },
+    // 文件删除
+    async deleteFile(row) {
+      console.log('删除的文件的信息', row)
+      await qualificationDelete(row.qualificationsId)
+      const result = await qualificationUploadLstQuery(this.companyId)
+      this.qualificationFormData = result.data.map((item) => {
+        if (item.grade === '1') {
+          item.gradecn = '甲级'
+        } else if (item.grade === '2') {
+          item.gradecn = '乙级'
+        } else {
+          item.gradecn = '丙级'
+        }
+        return item
+      })
+      this.msgSuccess('删除成功')
     },
     // 删除
     handleDelete(row) {

@@ -35,6 +35,14 @@ export function uploadImg(data) {
     data
   })
 }
+// 文件上传
+export function uploadFile(data) {
+  return request({
+    url: '/upload',
+    method: 'post',
+    data
+  })
+}
 
 // 类别获取
 export function getCatg() {
@@ -89,8 +97,33 @@ export function multChoiceDeleteUnit(deptIds) {
 // 资质上传列表查询
 export function qualificationUploadLstQuery(deptId) {
   return request({
-    url: '/backstage/qualifications/' + deptId,
+    url: '/backstage/qualifications/dept/' + deptId,
     method: 'get'
   })
+}
+
+// 资质上传操作
+export function qualificationUpload(data) {
+  return request({
+    url: '/backstage/qualifications',
+    method: 'post',
+    data
+  })
+}
+
+// 资质删除操作
+export function qualificationDelete(qualificationsId) {
+  return request({
+    url: '/backstage/qualifications/' + qualificationsId,
+    method: 'delete'
+  })
+}
+
+// 资质下载操作
+export function qualificationDownload(fileId) {
+  return request({
+    url: '/getFile/' + fileId,
+    method: 'get'
+  })  
 }
 
