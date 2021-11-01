@@ -69,7 +69,7 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55"> </el-table-column>
-          <el-table-column prop="deptName" label="单位名称" width="170">
+          <el-table-column prop="deptNamenew" label="单位名称" width="170">
           </el-table-column>
           <el-table-column prop="deptTypeName" label="类别" width="170">
           </el-table-column>
@@ -85,7 +85,7 @@
               >
             </template>
           </el-table-column>
-          <el-table-column prop="leader" label="人员" width="170">
+          <el-table-column prop="leadernew" label="人员" width="170">
           </el-table-column>
           <el-table-column prop="remake" label="备注" width="170">
           </el-table-column>
@@ -760,9 +760,10 @@ export default {
       this.tableData = result.rows.map((item) => {
         item.remake = item.remark
         item.addresss = item.address
+        item.leadernew = item.leader
+        item.deptNamenew = item.deptName
         return item
       })
-     
     },
     // 分页处理
     async handlePagination(info) {

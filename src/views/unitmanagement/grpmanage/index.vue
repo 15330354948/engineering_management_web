@@ -52,11 +52,11 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55"> </el-table-column>
-          <el-table-column prop="name" label="分组名称" width="300">
+          <el-table-column prop="groupName" label="分组名称" width="300">
           </el-table-column>
-          <el-table-column prop="name" label="人员" width="300">
+          <el-table-column prop="nickNames" label="人员" width="300">
           </el-table-column>
-          <el-table-column prop="name" label="备注" width="300">
+          <el-table-column prop="remark" label="备注" width="300">
           </el-table-column>
           <el-table-column
             label="操作"
@@ -72,15 +72,133 @@
 
       <!-- 底部分页 -->
       <div class="bottom-pagination">
-        <Pagination :total="total"></Pagination>
+        <Pagination
+          @pagination="handlePagination"
+          :total="page.total"
+          :limit="page.limit"
+        ></Pagination>
       </div>
     </div>
+    <!-- 新增分组 -->
+      <el-dialog
+        :title="'新增分组'"
+        :visible.sync="newGrp"
+        :width="'40%'"
+        :fullscreen="fullScreen"
+      >
+        <div slot="title" style="" class="header-title">
+          新增分组
+          <div
+            @click="() => (fullScreen = !fullScreen)"
+            class="fullscreen"
+          ></div>
+        </div>
+
+        <!-- 内容 -->
+        <div class="content-panel">
+            <el-form
+              :model="newGrpForm"
+              :rules="newGrpFormRules"
+              ref="newGrpForm"
+              label-width="100px"
+            >
+                <el-form-item label="分组名称" prop="deptName">
+                  <el-input v-model="newGrpForm.deptName"></el-input>
+                </el-form-item>
+                <el-form-item label="分配人员" prop="assignPersonnel">
+                <el-select style="width: 100%" v-model="newGrpForm.assignPersonnel" multiple placeholder="请选择">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="备注" prop="remark">
+                <el-input
+                  type="textarea"
+                  v-model="newGrpForm.remark"
+                ></el-input>
+              </el-form-item>
+            </el-form>
+        </div>
+
+        <div class="slot-container">
+          <slot></slot>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="newGrp = false">取 消</el-button>
+          <el-button type="primary" @click="newGrpFunc">保 存</el-button>
+        </span>
+      </el-dialog>
+    <!-- 修改分组 -->
+      <el-dialog
+        :title="'修改分组'"
+        :visible.sync="editDialog"
+        :width="'40%'"
+        :fullscreen="fullScreen"
+      >
+        <div slot="title" style="" class="header-title">
+          修改分组
+          <div
+            @click="() => (fullScreen = !fullScreen)"
+            class="fullscreen"
+          ></div>
+        </div>
+
+        <!-- 内容 -->
+        <div class="content-panel">
+            <el-form
+              :model="EditGrpForm"
+              :rules="EditGrpFormRules"
+              ref="newGrpForm"
+              label-width="100px"
+            >
+                <el-form-item label="分组名称" prop="groupName">
+                  <el-input v-model="EditGrpForm.groupName"></el-input>
+                </el-form-item>
+                <el-form-item label="分配人员" prop="assignPersonnel">
+                <el-select style="width: 100%" v-model="EditGrpForm.assignPersonnel" multiple placeholder="请选择">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="备注" prop="remark">
+                <el-input
+                  type="textarea"
+                  v-model="EditGrpForm.remark"
+                ></el-input>
+              </el-form-item>
+            </el-form>
+        </div>
+
+        <div class="slot-container">
+          <slot></slot>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="editDialog = false">取 消</el-button>
+          <el-button type="primary" @click="modifyAndSave">保 存</el-button>
+        </span>
+      </el-dialog>
   </div>
 </template>
 
 <script>
   import TableSearch from "@/components/TableSearch";
   import Popups from "@/views/maintenance/components/popups/index.vue"
+  import {
+    grpLst,
+    lstOfUnits,
+    assignPersonnel,
+    newGrpApi,
+    updateGrpApi,
+    deleteGrpApi
+  } from '@/api/grpmanage/index.js'
   export default {
     name: 'grpmanage',
     components: {
@@ -91,6 +209,7 @@
       return {
         // 上一次点击的名字
         lastActivatedName: '',
+              fullScreen: false,
         // 当前激活选项索引
         currentIndex: -1,
         // 页面标志
@@ -99,6 +218,15 @@
         leftTitle: '所属单位',
         // 搜索的值
         searchValue: '',
+        page: {
+        total: 0,
+        limit: 10,
+      },
+      newGrpForm: {},
+      query: {
+        pageNum: 1,
+        pageSize: 10,
+      },
         // 左栏的数据列表
         dataList: [],
         // 基础对比库
@@ -107,6 +235,9 @@
         total: 0,
         // 表格当前选中项
         selectedItem: [],
+        currentlySelectedUnit: '',
+        newGrp: false,
+        editDialog: false,
         // 弹窗相关
         dialogInfo: {
           // dialog 标题
@@ -116,14 +247,89 @@
           // dialog 宽度
           dialogWidth: ""
         },
+        EditGrpForm: {},
         searchForm: {
           name: ''
         },
+        options: [{
+          label: '测试1',
+          value: '测试1'
+        }, {
+          label: '测试2',
+          value: '测试2'
+        }],
         // 表格数据
       tableData: [],
+        newGrpFormRules: {
+          deptName: [{ required: true, message: "请输入分组名称", trigger: "blur" }],
+          assignPersonnel: [{ required: true, message: "请选择分配人员", trigger: "blur" }],
+        },
+        EditGrpFormRules: {
+          deptName: [{ required: true, message: "请输入分组名称", trigger: "blur" }],
+          assignPersonnel: [{ required: true, message: "请选择分配人员", trigger: "blur" }],
+        },
       }
     },
     methods: {
+      // 保存
+      async modifyAndSave() {
+        this.$refs.newGrpForm.validate(async (valid) => {
+          if(valid) { 
+            this.EditGrpForm.userIds = this.EditGrpForm.assignPersonnel.join(',')
+            let data = {
+                deptId: this.EditGrpForm.deptId,
+                groupName: this.EditGrpForm.deptName,
+                remark: this.EditGrpForm.remark,
+                userIds: this.EditGrpForm.assignPersonnel.join(','),
+                groupId: this.EditGrpForm.groupId
+              }
+            console.log(data)
+            await updateGrpApi(data)
+            this.editDialog = false
+            this.getList()
+          } else {
+            return false
+          }
+        })
+      },
+      // 修改分组
+      async handleEdit(row) {
+        console.log(row)
+        let res = []
+        if(row.userIds !== '') {
+          if(row.userIds.indexOf(',') !== -1) {
+            res = row.userIds.split(',').map((item) => {
+            return item*1
+          })
+          } else {
+            res.push(row.userIds*1)
+          }
+        }
+       
+        this.editDialog = true  
+        this.EditGrpForm = JSON.parse(JSON.stringify(row))
+        const result = await assignPersonnel({deptId: row.deptId})
+        
+        this.options = result.rows.map((item) => {
+            item.label = item.nickName
+            item.value = item.userId
+            return item
+          })
+        this.$set(this.EditGrpForm, 'assignPersonnel', res)
+        console.log("asdasd",this.EditGrpForm)
+      },
+      // 查询分组列表
+      async getList(query) {
+        const result = await grpLst(query)
+        console.log('result', result)
+        this.page.total = result.total;
+        this.tableData = result.rows.map((item) => {
+          item.nickNames = item.sysUsers.map((item) => {
+            return item.nickName
+          }).join('，')
+          return item
+        })
+      },
       // 通用删除
       handleGenerDelete(config=undefined, data) {
         let hint
@@ -136,10 +342,18 @@
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
-        }).then(() => {
+        }).then(async () => {
           // 执行删除逻辑
           console.log("要删除的信息", data)
-          this.tableData = []
+          if(config) {
+            await deleteGrpApi(data.map((item) => item.groupId).join(','))
+          } else {
+            await deleteGrpApi(data.groupId.toString())
+          }
+          this.msgSuccess('删除成功')
+           setTimeout(() => {
+            this.getList();
+          }, 100);
         }).catch(() => {
           console.log("取消删除")
         });
@@ -155,17 +369,50 @@
           this.currentIndex = index
           this.lastActivatedName = item.name
           // 待对接接口，刷新界面，根据name重新请求
-          console.log(item.name);
+          let query = Object.assign(this.query, { deptId: item.deptId });
+           this.currentlySelectedUnit = item.deptId
+          this.getList(query);
         } else if(this.lastActivatedName!=='' && this.lastActivatedName !== item.name) { 
           this.currentIndex = index
           this.lastActivatedName = item.name
           // 待对接接口，刷新界面，根据name重新请求
-          console.log(item.name);
+          let query = Object.assign(this.query, { deptId: item.deptId });
+           this.currentlySelectedUnit = item.deptId
+          this.getList(query);
         } else {
           this.currentIndex = -1
           this.lastActivatedName = ''
           // 待对接接口，刷新界面，请求所有数据
+          delete this.query.parentId;
+          this.currentlySelectedUnit = ""
+          this.getList(this.query);
         }
+      },
+      async newGrpFunc() {
+        this.$refs.newGrpForm.validate(async (valid) => {
+        if(valid) {
+          console.log(this.newGrpForm)
+          let data = {
+            deptId: this.currentlySelectedUnit,
+            groupName: this.newGrpForm.deptName,
+            remark: this.newGrpForm.remark,
+            userIds: this.newGrpForm.assignPersonnel.join(',')
+          }
+          const result = await newGrpApi(data)
+          this.newGrp = false
+          this.getList()
+        } else {
+          return false
+        }
+      })
+      },
+      // 分页处理
+      handlePagination(info) {
+        let { page, limit } = info;
+        this.page.limit = limit;
+        this.query.pageNum = page;
+        this.query.pageSize = limit;
+        this.getList(this.query);
       },
       // 多选处理
       handleSelectionChange(selection) {
@@ -188,54 +435,54 @@
         this.slotStatus = {}
       },
     },
-    created() {
+    async created() {
+      // 单位列表
+      const result = await lstOfUnits()
       // mock
-      this.oldDataList = this.dataList = [
-        {name: '测试数据1'},
-        {name: '测试数据2'},
-        {name: '测试数据3'},
-        {name: '测试数据4'},
-        {name: '测试数据5'},
-        {name: '测试数据6'},
-        {name: '测试数据7'}
-      ]
-      this.tableData = [
-        {
-          date: "测试日期1",
-          name: "测试1",
-          address: "测试地址1",
-        },
-        {
-          date: "测试日期2",
-          name: "测试2",
-          address: "测试地址2",
-        }]
-      this.total = this.tableData.length
+      this.oldDataList = this.dataList = result.rows.map((item) => {
+        item.name = item.deptName
+        return item
+      })
+      this.getList(this.query);
       this.$bus
       .$off(`${this.pageSign}SearchClick`)
       .$on(`${this.pageSign}SearchClick`, () => {
         console.log("已监听到搜索");
         console.log(this.searchForm);
+        let query = {};
+        if(this.searchForm.name !== "") {
+          query.groupName = this.searchForm.name;
+        }
+        query = Object.assign(this.query, query)
+        this.getList(query);
       });
     this.$bus
       .$off(`${this.pageSign}ResetClick`)
       .$on(`${this.pageSign}ResetClick`, () => {
         console.log("已监听到重置");
         this.searchForm = {};
+        delete this.query.groupName
+        this.getList(this.query);
       });
     this.$bus
       .$off(`${this.pageSign}CreateClick`)
-      .$on(`${this.pageSign}CreateClick`, () => {
+      .$on(`${this.pageSign}CreateClick`, async () => {
         console.log("已监听到创建");
-        // 清除传入
-        this.mtemplateEdit = {}
-        this.slotStatus = {
-          mtemplateEdit: true
-        }
-        this.dialogInfo = {
-          dialogShow: true,
-          dialogTitle: "人员新增",
-          dialogWidth: "35%"
+         if(this.currentlySelectedUnit!=='') {
+          // 清除传入
+          // const {data} = await getCatg()
+          // this.creAnOrganizationForm.catg = data
+          // this.creAnOrganizationForm.currentlyCreatedCatg = this.currentlySelectedUnit
+          const result = await assignPersonnel({deptId: this.currentlySelectedUnit})
+          this.options = result.rows.map((item) => {
+            item.label = item.nickName
+            item.value = item.userId
+            return item
+          })
+          this.newGrpForm = {}
+          this.newGrp = true
+        } else {
+          this.msgWarn("请先在左侧选择一项参与方")
         }
       });
     this.$bus
@@ -344,6 +591,52 @@
       }
     }
   }
+  ::v-deep .el-dialog__body {
+    max-height: 1200px;
+    overflow: auto;
+    margin-bottom: 20px;
+    &::-webkit-scrollbar-thumb {
+      background-color: #d9e1e6 !important;
+    }
+    .slot-container {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+  ::v-deep .el-dialog {
+    margin-top: 250px !important;
+  }
+  ::v-deep .el-dialog__header {
+    background: #f8f8f8;
+    padding: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 20px;
+    border-radius: 6px;
+  }
+  ::v-deep .el-dialog__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #606266;
+  }
+
+  ::v-deep .el-dialog__footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+  ::v-deep .el-dialog__headerbtn {
+    position: inherit;
+    color: #606266;
+  }
+  .content-panel {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 40px;
+  }
   .right {
     flex: 1;
     height: 100%;
@@ -387,6 +680,7 @@
       display: flex;
       justify-content: center;
     }
+    
   }
   }
 }
