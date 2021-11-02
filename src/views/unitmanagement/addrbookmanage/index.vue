@@ -420,13 +420,14 @@ export default {
       const result = await addrBookLst(query);
       this.page.total = result.total;
       this.tableData = result.rows.map((item) => {
-        item.sexcn = item.sex === '0' ? '男': '女'
+        if(item.sex) {
+          item.sexcn = item.sex === '0' ? '男': '女'
+        }
         return item;
       });
     },
     handleEdit(row) {
       this.newStfFormEdit = {
-        sex :row.sex * 1,
         name: row.employeeName,
         phonenum : row.phone,
         affl : row.deptName,
@@ -434,6 +435,9 @@ export default {
         post : row.postName,
         deptId: row.deptId,
         bookId: row.bookId
+      }
+      if(row.sex) {
+        this.newStfFormEdit.sex = row.sex * 1
       }
       this.newStfEdit = true
     },
