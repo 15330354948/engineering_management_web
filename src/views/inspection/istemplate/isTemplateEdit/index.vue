@@ -155,7 +155,7 @@ export default {
             this.formInvalid = true
           } else {
             this.formInvalid = false
-            this.msgError("巡检项步骤有误，请检查")
+            this.msgError("需填写巡检要求，请检查")
           }
         } else {
           this.formInvalid = false

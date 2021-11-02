@@ -161,7 +161,7 @@ export default {
             this.formInvalid = true
           } else {
             this.formInvalid = false
-            this.msgError("维护项步骤有误，请检查")
+            this.msgError("需填写维护要求，请检查")
           }
         } else {
           this.formInvalid = false
