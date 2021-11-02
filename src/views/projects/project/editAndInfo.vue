@@ -2,19 +2,19 @@
   <div class="editAndInfo_container">
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="项目信息" name="projectInfo">
-        <projectInfo :btnType="btnType" ref="projectInfo"></projectInfo>
+        <projectInfo @closeDialog="closeDialog" :projectData="projectData" :btnType="btnType" ref="projectInfo"></projectInfo>
       </el-tab-pane>
       <el-tab-pane label="资料文件" name="dataManagement">
-        <dataManagement :btnType="btnType" ref="dataManagement"></dataManagement>
+        <dataManagement :projectData="projectData" :btnType="btnType" ref="dataManagement"></dataManagement>
       </el-tab-pane>
       <el-tab-pane label="子项管理" name="subManagement">
-        <subManagement :btnType="btnType" ref="subManagement"></subManagement>
+        <subManagement :projectData="projectData" :btnType="btnType" ref="subManagement"></subManagement>
       </el-tab-pane>
       <el-tab-pane label="维护管理" name="maintainManagement">
-        <maintenance :btnType="btnType" ref="maintainManagement"></maintenance>
+        <maintenance :projectData="projectData" :btnType="btnType" ref="maintainManagement"></maintenance>
       </el-tab-pane>
       <el-tab-pane label="投资管理" name="investmentManagement">
-        <information :btnType="btnType" ref="investmentManagement"></information>
+        <information :projectData="projectData" :btnType="btnType" ref="investmentManagement"></information>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -34,7 +34,7 @@
       maintenance,
       information
     },
-    props: ["btnType"],
+    props: ["btnType","projectData"],
     data() {
       return {
         activeName: 'projectInfo'
@@ -43,7 +43,10 @@
     methods: {
       handleClick(tab, event) {
         // console.log(tab, event);
-      }
+      },
+      closeDialog(){
+        this.$emit("closeDialog");
+      },
     }
   }
 

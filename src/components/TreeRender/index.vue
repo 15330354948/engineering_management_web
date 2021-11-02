@@ -1,7 +1,7 @@
 <template>
   <span class="tree-expand" style="display: flex; justify-content: space-between; width: 90%">
     <span class="tree-label">
-      <span>{{DATA.label}}</span>
+      <span>{{DATA.spotName}}</span>
     </span>
     <span class="tree-btn">
       <i class="el-icon-loading" v-if="DATA.loading"></i>
@@ -28,9 +28,6 @@
 </script>
 
 <style lang="scss" scoped>
-  /deep/.tree-expand {
-    display: flex;
-    justify-content: space-between;
-  }
+
 
 </style>
