@@ -572,10 +572,6 @@ export default {
         // saveFileId.push(fileId)
       }
       
-      console.log(companyQualifications)
-      // console.log("公司id", this.companyId)
-      // console.log("文件",saveFileId.join(','))
-      // console.log("保存的资质等级是", this.assetClasSelection)
 
       await qualificationUpload(
         companyQualifications
@@ -613,12 +609,10 @@ export default {
     async handleEdit(row) {
       if(row.imgId) {
         const result = await getAvatar(row.imgId)
-        console.log(result)
         this.imageUrlEdit = result.data.url
       } else {
         this.imageUrlEdit = ""
       }
-      console.log(row)
       this.editDialog = true  
       this.unitModification = row
       this.unitModification.position = row.longitude + ',' + row.latitude
@@ -647,7 +641,6 @@ export default {
         latitude = 39.9
       }
       let val = lontitude.toFixed(5) + ',' +latitude.toFixed(5) 
-      console.log(val)
       
       this.$set(this.unitModification, 'position', val)
       this.insidelontitude = lontitude
@@ -657,7 +650,6 @@ export default {
       this.$refs.unitModification.validate(async (valid) => {
         if(valid) {
           let img_id = ''
-          console.log(this.file)
           if(JSON.stringify(this.file) != '{}') {
             var formData = new FormData();
             formData.append("file",this.file)
@@ -679,17 +671,15 @@ export default {
           data.longitude = this.unitModification.position.split(',')[0] * 1
           data.latitude =  this.unitModification.position.split(',')[1] * 1
           data.deptId = this.unitModification.deptId
-          console.log("submit",data)
           const result = await EditUnit(data)
           this.editDialog=false
-          this.getList()
+          this.getList({parentId: this.currentlySelectedUnit})
         } else {
           return false
         }
       })
     },
     uploadImg() {
-      console.log("提交");
     },
     lonAndLatPreservation() {
       let val = this.insidelontitude + ',' + this.insidelatitude
@@ -698,10 +688,8 @@ export default {
       this.gps = false
     },
     changeUpload(file, filelist) {
-      console.log(file, filelist);
       this.file = filelist[0].raw;
       let fileName = file.name;
-      console.log(fileName);
       let regex = /(.jpg|.jpeg)$/; //匹配图片类型
       /*toLowerCase()将字符串转化为小写，返回一个新的字符串，其中的大写全部转为小写*/
       if (regex.test(fileName.toLowerCase())) {
@@ -711,11 +699,8 @@ export default {
       }
     },
     changeUpload2(file, filelist) {
-      console.log("helloworld");
-      console.log(file, filelist);
       this.file = filelist[0].raw;
       let fileName = file.name;
-      console.log(fileName);
       let regex = /(.jpg|.jpeg)$/; //匹配图片类型
       /*toLowerCase()将字符串转化为小写，返回一个新的字符串，其中的大写全部转为小写*/
       if (regex.test(fileName.toLowerCase())) {
@@ -726,7 +711,6 @@ export default {
       }
     },
     async setPosition(){
-      console.log(this.creAnOrganizationForm.addr)
       let query = {
         postStr: {
           searchWord: this.creAnOrganizationForm.addr,
@@ -746,7 +730,6 @@ export default {
         latitude = 39.9
       }
       let val = lontitude.toFixed(5) + ',' +latitude.toFixed(5) 
-      console.log(val)
       
       this.$set(this.creAnOrganizationForm, 'name', val)
       this.insidelontitude = lontitude
@@ -755,7 +738,6 @@ export default {
     // 分页查询
     async getList(query) {
       const result = await queryUnitList(query);
-      console.log(result)
       this.page.total = result.total;
       this.tableData = result.rows.map((item) => {
         item.remake = item.remark
@@ -767,7 +749,6 @@ export default {
     },
     // 分页处理
     async handlePagination(info) {
-      // console.log("分页信息为", info);
       let { page, limit } = info;
       this.page.limit = limit;
       this.query.pageNum = page;
@@ -778,7 +759,6 @@ export default {
     // 资质上传
     async handleUpload(row) {
       this.companyId = row.deptId
-      console.log("这一行的数据", row);
       const result = await qualificationUploadLstQuery(row.deptId)
       this.qualificationFormData = result.data.map((item) => {
         if (item.grade === '1') {
@@ -808,7 +788,6 @@ export default {
         .then(() => {
           // 执行删除逻辑
             if (config) {
-            console.log(config.selectedItem)
             let deptIds = config.selectedItem.map((item) => {
               return item.deptId;
             }).join(',');
@@ -824,20 +803,16 @@ export default {
           }, 100);
         })
         .catch(() => {
-          console.log("取消删除");
         });
     },
     // 文件下载
     async downloadFile(row) {
      
       const {data} = await qualificationDownload(row.fileId)
-      console.log('下载的文件的信息', data)
       if(row.fileName.split('.')[1] === 'txt') {
-        // console.log('txt')
         // var element = document.createElement('a');
         // element.setAttribute('href', data.url);
         // element.setAttribute('download', data.original);
-        // console.log(element)
         // element.style.display = 'none';
         // document.body.appendChild(element);
         // element.click();
@@ -854,7 +829,6 @@ export default {
     },
     // 文件删除
     async deleteFile(row) {
-      console.log('删除的文件的信息', row)
       await qualificationDelete(row.qualificationsId)
       const result = await qualificationUploadLstQuery(this.companyId)
       this.qualificationFormData = result.data.map((item) => {
@@ -871,7 +845,6 @@ export default {
     },
     // 删除
     handleDelete(row) {
-      console.log("这一行的信息", row);
       this.handleGenerDelete(undefined, row);
     },
     // 单位选择
@@ -881,8 +854,6 @@ export default {
         this.lastActivatedName = item.deptName;
         // 待对接接口，刷新界面，根据name重新请求
         let query = Object.assign(this.query, { parentId: item.deptId });
-        console.log(item)
-        console.log("?????",query);
         this.getList(query);
         this.currentlySelectedUnit = item.deptId
       } else if (
@@ -893,7 +864,6 @@ export default {
         this.lastActivatedName = item.deptName;
         // 待对接接口，刷新界面，根据name重新请求
         let query = Object.assign(this.query, { parentId: item.deptId });
-        console.log("?????",query);
         this.currentlySelectedUnit = item.deptId
         this.getList(query);
       } else {
@@ -916,7 +886,6 @@ export default {
       let formVal = this.$refs[whichOne][whichOne + "Form"];
       if (ref.formInvalid) {
         // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
-        console.log("保存值为:", formVal);
         this.handleDialogClose();
       }
     },
@@ -930,7 +899,6 @@ export default {
       this.$refs.creAnOrganizationForm.validate(async (valid) => {
         if(valid) {
           let img_id = ''
-          console.log(this.file)
           if(JSON.stringify(this.file) != '{}') {
             var formData = new FormData();
             formData.append("file",this.file)
@@ -947,7 +915,6 @@ export default {
           data.leader=this.creAnOrganizationForm.principal
           data.phone=this.creAnOrganizationForm.ctctInfo
           data.remark=this.creAnOrganizationForm.desc
-          console.log(data)
           setTimeout(async () => {
             data.longitude = this.creAnOrganizationForm.name.split(',')[0] * 1
           data.latitude =  this.creAnOrganizationForm.name.split(',')[1] * 1
@@ -970,7 +937,6 @@ export default {
           setTimeout(() => {
             PG.fly({longitude: this.insidelontitude*1, latitude: this.insidelatitude*1})
             PG.leftClick((e) => {
-              console.log("helo", e)
               this.insidelontitude = e.longitude.toFixed(5)
               this.insidelatitude = e.latitude.toFixed(5)
               PG.fly({longitude: this.insidelontitude*1, latitude: this.insidelatitude*1})
@@ -991,7 +957,6 @@ export default {
           setTimeout(() => {
             PG.fly({longitude: this.insidelontitude*1, latitude: this.insidelatitude*1})
             PG.leftClick((e) => {
-              console.log("helo", e)
               this.insidelontitude = e.longitude.toFixed(5)
               this.insidelatitude = e.latitude.toFixed(5)
               PG.fly({longitude: this.insidelontitude*1, latitude: this.insidelatitude*1})
@@ -1003,7 +968,6 @@ export default {
       })
     },
     locationMap() {
-    console.log( this.insidelontitude, this.insidelatitude)
       PG.fly({longitude: this.insidelontitude*1, latitude: this.insidelatitude*1})
     },
   },
@@ -1012,7 +976,6 @@ export default {
     //   dictType: "cqndt_company_type",
     // });
     const result = await getCatg()
-    console.log("单位类别数据为:", result);
     // mock
     // this.oldDataList = this.dataList = [
     //   {name: '测试数据1'},
@@ -1028,8 +991,6 @@ export default {
     this.$bus
       .$off(`${this.pageSign}SearchClick`)
       .$on(`${this.pageSign}SearchClick`, () => {
-        console.log("已监听到搜索");
-        console.log(this.searchForm);
         let query = {};
         if(this.searchForm.name !== "") {
           query.deptName = this.searchForm.name;
@@ -1040,7 +1001,6 @@ export default {
     this.$bus
       .$off(`${this.pageSign}ResetClick`)
       .$on(`${this.pageSign}ResetClick`, () => {
-        console.log("已监听到重置");
         this.searchForm = {};
         delete this.query.deptName
         this.getList(this.query);
@@ -1048,7 +1008,6 @@ export default {
     this.$bus
       .$off(`${this.pageSign}CreateClick`)
       .$on(`${this.pageSign}CreateClick`, async() => {
-        console.log("已监听到创建");
         this.insidelontitude = -1
         this.insidelatitude = -1
         this.creAnOrganizationForm = {}

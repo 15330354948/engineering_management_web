@@ -283,10 +283,9 @@
                 userIds: this.EditGrpForm.assignPersonnel.join(','),
                 groupId: this.EditGrpForm.groupId
               }
-            console.log(data)
             await updateGrpApi(data)
             this.editDialog = false
-            this.getList()
+            this.getList({deptId: this.currentlySelectedUnit})
           } else {
             return false
           }
@@ -294,7 +293,6 @@
       },
       // 修改分组
       async handleEdit(row) {
-        console.log(row)
         let res = []
         if(row.userIds !== '') {
           if(row.userIds.indexOf(',') !== -1) {
@@ -316,12 +314,10 @@
             return item
           })
         this.$set(this.EditGrpForm, 'assignPersonnel', res)
-        console.log("asdasd",this.EditGrpForm)
       },
       // 查询分组列表
       async getList(query) {
         const result = await grpLst(query)
-        console.log('result', result)
         this.page.total = result.total;
         this.tableData = result.rows.map((item) => {
           item.nickNames = item.sysUsers.map((item) => {
@@ -344,7 +340,6 @@
           type: "warning",
         }).then(async () => {
           // 执行删除逻辑
-          console.log("要删除的信息", data)
           if(config) {
             await deleteGrpApi(data.map((item) => item.groupId).join(','))
           } else {
@@ -355,12 +350,10 @@
             this.getList();
           }, 100);
         }).catch(() => {
-          console.log("取消删除")
         });
       },
       // 删除
       handleDelete(row) {
-        console.log("这一行的信息", row)
         this.handleGenerDelete(undefined, row) 
       },
       // 单位选择
@@ -370,20 +363,20 @@
           this.lastActivatedName = item.name
           // 待对接接口，刷新界面，根据name重新请求
           let query = Object.assign(this.query, { deptId: item.deptId });
-           this.currentlySelectedUnit = item.deptId
+          this.currentlySelectedUnit = item.deptId
           this.getList(query);
         } else if(this.lastActivatedName!=='' && this.lastActivatedName !== item.name) { 
           this.currentIndex = index
           this.lastActivatedName = item.name
           // 待对接接口，刷新界面，根据name重新请求
           let query = Object.assign(this.query, { deptId: item.deptId });
-           this.currentlySelectedUnit = item.deptId
+          this.currentlySelectedUnit = item.deptId
           this.getList(query);
         } else {
           this.currentIndex = -1
           this.lastActivatedName = ''
           // 待对接接口，刷新界面，请求所有数据
-          delete this.query.parentId;
+          delete this.query.deptId;
           this.currentlySelectedUnit = ""
           this.getList(this.query);
         }
@@ -391,7 +384,6 @@
       async newGrpFunc() {
         this.$refs.newGrpForm.validate(async (valid) => {
         if(valid) {
-          console.log(this.newGrpForm)
           let data = {
             deptId: this.currentlySelectedUnit,
             groupName: this.newGrpForm.deptName,
@@ -400,7 +392,7 @@
           }
           const result = await newGrpApi(data)
           this.newGrp = false
-          this.getList()
+          this.getList({deptId: this.currentlySelectedUnit})
         } else {
           return false
         }
@@ -425,7 +417,6 @@
         let formVal = this.$refs[whichOne][whichOne+'Form']
         if(ref.formInvalid) {
           // 校验成功，执行保存逻辑, Task 必选的逻辑需要优化
-          console.log("保存值为:", formVal)
           this.handleDialogClose()
         }
       },
@@ -447,8 +438,6 @@
       this.$bus
       .$off(`${this.pageSign}SearchClick`)
       .$on(`${this.pageSign}SearchClick`, () => {
-        console.log("已监听到搜索");
-        console.log(this.searchForm);
         let query = {};
         if(this.searchForm.name !== "") {
           query.groupName = this.searchForm.name;
@@ -459,7 +448,6 @@
     this.$bus
       .$off(`${this.pageSign}ResetClick`)
       .$on(`${this.pageSign}ResetClick`, () => {
-        console.log("已监听到重置");
         this.searchForm = {};
         delete this.query.groupName
         this.getList(this.query);
@@ -467,7 +455,6 @@
     this.$bus
       .$off(`${this.pageSign}CreateClick`)
       .$on(`${this.pageSign}CreateClick`, async () => {
-        console.log("已监听到创建");
          if(this.currentlySelectedUnit!=='') {
           // 清除传入
           // const {data} = await getCatg()
