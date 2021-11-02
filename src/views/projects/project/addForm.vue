@@ -3,9 +3,9 @@
     <div v-if="step == 0">
       <el-form :model="addForm" ref="addForm" label-width="120px" :rules="rules">
         <el-form-item label="项目参与方" prop="stepValue">
-          <el-select v-model="addForm.stepValue" @change="handelChange" multiple placeholder="请选择参与方" id="selects"
-            v-defaultSelect="[addForm.stepValue,stepOption,'value','disabled',true]">
-            <el-option v-for="item in stepOption" :key="item.value" :label="item.label" :value="item.value"
+          <el-select v-model="addForm.stepValue" @change="handelChange" ref="stepValue" multiple placeholder="请选择参与方"
+            id="selects" v-defaultSelect="[addForm.stepValue,companyType,'dictValue','disabled',true]">
+            <el-option v-for="item in companyType" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue"
               :disabled="item.disabled">
             </el-option>
           </el-select>
@@ -16,7 +16,7 @@
       </div>
     </div>
     <div v-if="step == 1">
-      <el-button type="primary" @click="step=0">上一步</el-button>
+      <el-button type="primary" @click="prevStep">上一步</el-button>
       <el-tabs v-model="activeName">
         <el-tab-pane label="项目信息" name="first">
           <el-form :model="addForm" ref="addForm" label-width="120px" :rules="rules">
@@ -24,12 +24,12 @@
             <el-row :gutter="24">
               <el-col :span="12">
                 <el-form-item label="项目名称" prop="projectName">
-                  <el-input v-model="addForm.projectName" placeholder="请输入项目名称" />
+                  <el-input v-model="addForm.projectName" clearable placeholder="请输入项目名称" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="项目编号" prop="projectCode">
-                  <el-input v-model="addForm.projectCode" placeholder="请输入编码名称" />
+                  <el-input v-model="addForm.projectCode" disabled placeholder="请输入项目编号" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -50,20 +50,32 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="项目地址" prop="projectAddress">
-                  <el-cascader style="width:40%" v-model="addForm.projectAddress" :options="areaOptions"
-                    :props="{ checkStrictly: true, value: 'id'}" clearable></el-cascader>
-                  <el-input style="width:55%;margin-left: 10px" v-model="addForm.projectAddress1" placeholder="详细地址" />
+                <el-form-item label="项目地址" prop="area">
+                  <el-cascader style="width:40%" v-model="addForm.area" :options="areaOptions" ref="area"
+                    :props="{ checkStrictly: true, value: 'id'}" clearable>
+                  </el-cascader>
+                  <el-input style="width:55%;margin-left: 10px" v-model="addForm.projectAddress" clearable
+                    placeholder="详细地址" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <!-- <el-col :span="12">
                 <el-form-item label="经纬度" prop="LongAndLatitude">
-                  <el-input v-model="addForm.LongAndLatitude" placeholder="请输入内容" />
+                  <el-input v-model="addForm" placeholder="请输入内容" />
                 </el-form-item>
-              </el-col>
+              </el-col> -->
               <el-col :span="12">
                 <el-form-item label="备案号" prop="record">
-                  <el-input v-model="addForm.record" placeholder="请输入内容" />
+                  <el-input v-model="addForm.record" placeholder="请输入内容" clearable />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="经度" prop="longitude">
+                  <el-input v-model="addForm.longitude" placeholder="请输入经度" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="纬度" prop="latitude">
+                  <el-input v-model="addForm.latitude" placeholder="请输入纬度" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -72,25 +84,28 @@
             <el-row :gutter="24">
               <el-col :span="12">
                 <el-form-item label="计划验收时间" prop="acceptanceTime">
-                  <el-date-picker v-model="addForm.acceptanceTime" type="date" placeholder="选择日期" style="width:100%">
+                  <el-date-picker v-model="addForm.acceptanceTime" value-format="yyyy-MM-dd" type="date"
+                    placeholder="选择日期" style="width:100%">
                   </el-date-picker>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="计划归档时间" prop="filingTime">
-                  <el-date-picker v-model="addForm.filingTime" type="date" placeholder="选择日期" style="width:100%">
+                  <el-date-picker v-model="addForm.filingTime" value-format="yyyy-MM-dd" type="date" placeholder="选择日期"
+                    style="width:100%">
                   </el-date-picker>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="计划竣工时间" prop="completionTime">
-                  <el-date-picker v-model="addForm.completionTime" type="date" placeholder="选择日期" style="width:100%">
+                  <el-date-picker v-model="addForm.completionTime" value-format="yyyy-MM-dd" type="date"
+                    placeholder="选择日期" style="width:100%">
                   </el-date-picker>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="考核模板" prop="assessmentId">
-                  <el-select v-model="addForm.assessmentId" multiple placeholder="请选择考核模板" style="width:100%">
+                  <el-select v-model="addForm.assessmentId" clearable placeholder="请选择考核模板" style="width:100%">
                     <el-option v-for="item in assessOption" :key="item.dictValue" :label="item.dictLabel"
                       :value="item.dictValue">
                     </el-option>
@@ -99,8 +114,8 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="关联水印" prop="watermarkId">
-                  <el-select v-model="addForm.watermarkId" multiple placeholder="请选择关联水印" style="width:100%">
-                    <el-option v-for="item in bidSectionOptions" :key="item.dictValue" :label="item.dictLabel"
+                  <el-select v-model="addForm.watermarkId" clearable placeholder="请选择关联水印" style="width:100%">
+                    <el-option v-for="item in markOption" :key="item.dictValue" :label="item.dictLabel"
                       :value="item.dictValue">
                     </el-option>
                   </el-select>
@@ -113,149 +128,61 @@
               </el-col>
             </el-row>
 
-            <div v-if="addForm.stepValue.indexOf('0')!= -1">
-              <h3>施工方</h3>
+            <div v-for="(item,index) in addForm.list" :key="index">
+              <h3>
+                {{typeFormat(item)}}
+              </h3>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="单位名称" prop="constructionName">
-                    <el-select v-model="addForm.constructionName" multiple placeholder="请选择单位名称" style="width:100%">
-                      <el-option v-for="item in bidSectionOptions" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
+                  <el-form-item label="单位名称" :prop="`list[${index}].companyName`">
+                    <el-select v-model="addForm.list[index].companyName" clearable placeholder="请选择单位名称"
+                      style="width:100%">
+                      <el-option v-for="it in companySelete(item) " :key="it.id" :label="it.label" :value="it.id">
                       </el-option>
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="单位负责人" prop="constructionUser">
-                    <el-input v-model="addForm.constructionUser" placeholder="选择单位后自动获取" disabled />
+                    <el-input v-model="addForm.list[index].companyUser" placeholder="选择单位后自动获取" disabled />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="联系方式" prop="constructionPhone">
-                    <el-input v-model="addForm.constructionPhone" placeholder="请输入内容" />
+                    <el-input v-model="addForm.list[index].companyPhone" clearable placeholder="请输入内容" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="监督人员" prop="constructionSupervise">
-                    <el-input v-model="addForm.constructionSupervise" placeholder="分配后自动获取" disabled />
+                    <el-input v-model="addForm.list[index].companySupervise" placeholder="分配后自动获取" disabled />
                   </el-form-item>
                 </el-col>
               </el-row>
-            </div>
 
-            <div v-if="addForm.stepValue.indexOf('1')!= -1">
-              <h3>监理方</h3>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <el-form-item label="单位名称" prop="supervisorName">
-                    <el-select v-model="addForm.supervisorName" multiple placeholder="请选择单位名称" style="width:100%">
-                      <el-option v-for="item in bidSectionOptions" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="单位负责人" prop="supervisorUser">
-                    <el-input v-model="addForm.supervisorUser" placeholder="选择单位后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="联系方式" prop="supervisorPhone">
-                    <el-input v-model="addForm.supervisorPhone" placeholder="请输入内容" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="监督人员" prop="supervisorProctor">
-                    <el-input v-model="addForm.supervisorProctor" placeholder="分配后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </div>
-
-            <div v-if="addForm.stepValue.indexOf('2')!= -1">
-              <h3>业主方</h3>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <el-form-item label="单位名称" prop="ownerName">
-                    <el-select v-model="addForm.ownerName" multiple placeholder="请选择单位名称" style="width:100%">
-                      <el-option v-for="item in bidSectionOptions" :key="item.dictValue" :label="item.dictLabel"
-                        :value="item.dictValue">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="单位负责人" prop="ownerUser">
-                    <el-input v-model="addForm.ownerUser" placeholder="选择单位后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="联系方式" prop="ownerPhone">
-                    <el-input v-model="addForm.ownerPhone" placeholder="请输入内容" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="监督人员" prop="ownerSupervise">
-                    <el-input v-model="addForm.ownerSupervise" placeholder="分配后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </div>
-
-
-            <div v-if="addForm.stepValue.indexOf('3')!= -1">
-              <h3>设计方</h3>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <el-form-item label="单位名称" prop="designName">
-                    <el-select v-model="addForm.designName" multiple placeholder="请选择单位名称" style="width:100%">
-                      <el-option v-for="item in companyOption" :key="item.value" :label="item.label"
-                        :value="item.value">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="单位负责人" prop="designUser">
-                    <el-input v-model="addForm.designUser" placeholder="选择单位后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="联系方式" prop="designPhone">
-                    <el-input v-model="addForm.designPhone" placeholder="请输入内容" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="监督人员" prop="designSupervise">
-                    <el-input v-model="addForm.designSupervise" placeholder="分配后自动获取" disabled />
-                  </el-form-item>
-                </el-col>
-              </el-row>
             </div>
 
             <h3>其他</h3>
             <el-row :gutter="24">
               <el-col :span="12">
                 <el-form-item label="项目概况" prop="projectSurvey">
-                  <el-input v-model="addForm.projectSurvey" placeholder="请输入内容" />
+                  <el-input v-model="addForm.projectSurvey" clearable placeholder="请输入内容" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="项目措施" prop="projectMeasures">
-                  <el-input v-model="addForm.projectMeasures" placeholder="请输入内容" />
+                  <el-input v-model="addForm.projectMeasures" clearable placeholder="请输入内容" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="备注" prop="remarks">
-                  <el-input v-model="addForm.remarks" placeholder="请输入内容" />
+                  <el-input v-model="addForm.remarks" clearable placeholder="请输入内容" />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <!-- <el-col :span="12">
                 <el-form-item label="总质评分" prop="score">
                   <el-input v-model="addForm.score" placeholder="系统自动生成" disabled />
                 </el-form-item>
-              </el-col>
+              </el-col> -->
             </el-row>
 
           </el-form>
@@ -278,12 +205,14 @@
   } from './directive';
   import {
     getArea,
-    addProject
+    addProject,
+    getTreeselect
   } from "@/api/projects/project";
   export default {
     directives: {
       defaultSelect
     },
+    props: ["companyType"],
     data() {
       return {
         activeName: 'first',
@@ -308,14 +237,24 @@
             message: "建设期次不能为空",
             trigger: "blur"
           }],
-          projectAddress: [{
+          area: [{
             required: true,
             message: "项目地址不能为空",
             trigger: "blur"
           }],
-          LongAndLatitude: [{
+          // projectAddress: [{
+          //   required: true,
+          //   message: "项目地址不能为空",
+          //   trigger: "blur"
+          // }],
+          longitude: [{
             required: true,
-            message: "经纬度不能为空",
+            message: "经度不能为空",
+            trigger: "blur"
+          }],
+          latitude: [{
+            required: true,
+            message: "纬度不能为空",
             trigger: "blur"
           }],
           acceptanceTime: [{
@@ -343,48 +282,48 @@
             message: "关联水印不能为空",
             trigger: "blur"
           }],
-          constructionName: [{
+          'list[0].companyName': [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          supervisorName: [{
+          'list[1].companyName': [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          ownerName: [{
+          'list[2].companyName': [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
           }],
-          designName: [{
+          'list[3].companyName': [{
             required: true,
             message: "单位名称不能为空",
             trigger: "blur"
-          }],
+          }]
         },
 
         addForm: {
           stepValue: [],
+          list: []
         },
         addOpen: false,
         step: 0,
         stepOption: [{
-          value: '0',
-          label: '施工方',
+          value: '1',
+          label: '监理方',
           disabled: true
         }, {
-          value: '1',
-          label: '监理方'
-        }, {
           value: '2',
-          label: '业主方'
+          label: '施工方'
         }, {
           value: '3',
+          label: '业主方'
+        }, {
+          value: '4',
           label: '设计方'
         }],
-        stepValue: [],
         // 项目地址
         areaOptions: [],
         // 关联水印配置
@@ -402,12 +341,14 @@
         // 监理方单位
         supervisorOption: [],
         // 业主方单位
-        ownerNameOption: []
+        ownerNameOption: [],
+        companyTree: [],
       }
     },
     created() {
       this.addForm.stepValue.push(this.stepOption[0].value);
       this.getAreaList();
+      this.getTree();
       this.getDicts("cqndt_period").then(response => {
         this.periodOptions = response.data;
       });
@@ -417,34 +358,43 @@
       this.getDicts("cqndt_assessment_type").then(response => {
         this.assessOption = response.data;
       });
+      this.getDicts("cqndt_watermark_type").then(response => {
+        this.markOption = response.data;
+      });
+
     },
     methods: {
       /** 提交按钮 */
       submitForm: function () {
         this.$refs["addForm"].validate(valid => {
           if (valid) {
-            this.$set(this.addForm, 'provinceCode', this.addForm.projectAddress[0])
-            this.$set(this.addForm, 'cityCode', this.addForm.projectAddress[1])
-            this.$set(this.addForm, 'countyCode', this.addForm.projectAddress[2])
-            this.addForm.assessmentId = this.addForm.assessmentId.join()
-            this.addForm.constructionName = this.addForm.constructionName.join()
-            this.addForm.watermarkId = this.addForm.watermarkId.join()
-            delete this.addForm.stepValue
+            let areaList = this.$refs.area.inputValue.split('/');
+            this.$set(this.addForm, 'provinceName', areaList[0])
+            this.$set(this.addForm, 'cityName', areaList[1])
+            this.$set(this.addForm, 'countyName', areaList[2])
+            this.$set(this.addForm, 'provinceCode', this.addForm.area[0].toString())
+            this.$set(this.addForm, 'cityCode', this.addForm.area[1].toString())
+            this.$set(this.addForm, 'countyCode', this.addForm.area[2].toString())
+            delete this.addForm.area
             if (this.addForm.projectId != undefined) {
               updateProject(this.addForm).then(response => {
                 this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
+                this.$emit("closeDialog");
               });
             } else {
               addProject(this.addForm).then(response => {
                 this.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
+                this.$emit("closeDialog");
               });
             }
           }
         });
+      },
+      getTree() {
+        getTreeselect().then(res => {
+          console.log(res);
+          this.companyTree = res.data
+        })
       },
       getAreaList() {
         getArea().then(res => {
@@ -452,7 +402,21 @@
         });
       },
       handelChange(e) {
-        console.log(e.indexOf('2'));
+        // for (var i = 0; i < e.length; i++) {
+        //   this.addForm.list[i].companyId = e[i]
+        // }
+      },
+      companySelete(e) {
+        let companyName = this.selectDictLabel(this.companyType, e.companyId)
+        let arr = []
+        this.companyTree.forEach((item, index) => {
+          if (item.label == companyName) {
+            if (item.children) {
+              arr = item.children;
+            }
+          }
+        })
+        return arr
       },
       cancel() {
         this.$emit("closeDialog");
@@ -463,12 +427,33 @@
         //   projectName: undefined,
         // };
         // this.resetForm("addForm");
-        this.addForm.stepValue = []
+        this.addForm = {
+          stepValue: [],
+          list: []
+        }
         this.addForm.stepValue.push(this.stepOption[0].value)
         this.step = 0
       },
+      // 上一步
+      prevStep() {
+        this.reset();
+      },
+      // 下一步
       nextBtn() {
         this.step = 1
+        for (var i = 0; i < this.addForm.stepValue.length; i++) {
+          this.addForm.list.push({
+            companyId: '',
+            companyName: '',
+            companyUser: '',
+            companyPhone: '',
+            companySupervise: '',
+          })
+          this.addForm.list[i].companyId = this.addForm.stepValue[i]
+        }
+      },
+      typeFormat(row) {
+        return this.selectDictLabel(this.companyType, row.companyId);
       },
     }
   }

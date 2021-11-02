@@ -4,15 +4,18 @@
       <el-col :span="5">
         <div class="subList">
           <div class="header">
-            <span>监测列表</span>
-            <span class="addItem" @click="addPoint">添加测点</span>
+            <span>测点列表</span>
+            <div class="rightBtn">
+              <el-button type="text" :disabled="multiple" @click="delPoint">删除</el-button>
+              <el-button type="text" @click="addPoint">添加测点</el-button>
+            </div>
           </div>
           <div class="treeList">
             <el-input class="searchInput" placeholder="输入关键字进行过滤" v-model="filterText">
             </el-input>
             <el-tree class="filter-tree" :data="treeData" :props="defaultProps" @node-click="handleNodeClick"
-              default-expand-all highlight-current :filter-node-method="filterNode" ref="tree" node-key="id"
-              :render-content="renderContent">
+              show-checkbox default-expand-all highlight-current :filter-node-method="filterNode" ref="tree"
+              node-key="spotId" @check-change="handleCheckChange" :render-content="renderContent">
             </el-tree>
           </div>
         </div>
@@ -20,24 +23,40 @@
 
       <el-col :span="19">
         <el-form :model="infoForm" ref="infoForm" :rules="rules" :inline="true" label-width="100px">
-          <el-form-item label="测点名称" prop="pointName">
-            <el-input v-model="infoForm.pointName" placeholder="请输入测点名称" clearable size="small"
-              :disabled="isDisabled" />
+          <el-form-item label="测点名称" prop="spotName">
+            <el-input v-model="infoForm.spotName" placeholder="请输入测点名称" clearable size="small" :disabled="isDisabled" />
           </el-form-item>
-          <el-form-item label="设计经纬度" prop="LongAndLatitude">
-            <el-input v-model="infoForm.LongAndLatitude" placeholder="请输入设计经纬度" clearable size="small"
-              :disabled="isDisabled">
-              <el-button style="padding-right:10px" slot="suffix" type="text" v-if="isDisabled==false">选择</el-button>
+          <el-form-item label="经度" prop="longitude">
+            <el-input v-model="infoForm.longitude" placeholder="请输入经度" clearable size="small" :disabled="isDisabled">
+              <el-button style="padding-right:10px" slot="suffix" type="text" v-if="isDisabled==false"
+                @click="getLocation">定位</el-button>
             </el-input>
           </el-form-item>
-          <el-form-item label="设备类型" prop="devType">
-            <el-select v-model="infoForm.devType" placeholder="请选择设备类型" clearable size="small" :disabled="isDisabled">
+          <el-form-item label="纬度" prop="latitude">
+            <el-input v-model="infoForm.latitude" placeholder="请输入纬度" clearable size="small" :disabled="isDisabled">
+              <el-button style="padding-right:10px" slot="suffix" type="text" v-if="isDisabled==false"
+                @click="getLocation">定位</el-button>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="设备类型" prop="equipmentType">
+            <el-select v-model="infoForm.equipmentType" placeholder="请选择设备类型" clearable size="small"
+              :disabled="isDisabled">
               <el-option v-for="dict in devTypeOptions" :key="dict.dictValue" :label="dict.dictLabel"
                 :value="dict.dictValue" />
             </el-select>
           </el-form-item>
-          <el-form-item label="设备ID" prop="devId" v-if="isDisabled==true">
-            <el-input v-model="infoForm.devId" size="small" disabled />
+          <el-form-item label="设备ID" prop="equipmentId" v-if="isDisabled==true">
+            <el-input v-model="infoForm.equipmentId" size="small" disabled />
+          </el-form-item>
+          <el-form-item label="手机卡类型" prop="phoneType">
+            <el-select v-model="infoForm.phoneType" placeholder="请选择手机卡类型" clearable size="small"
+              :disabled="isDisabled">
+              <el-option v-for="dict in devTypeOptions" :key="dict.dictValue" :label="dict.dictLabel"
+                :value="dict.dictValue" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="卡号" prop="cardId">
+            <el-input v-model="infoForm.cardId" size="small" placeholder="请输入手机卡号" :disabled="isDisabled" />
           </el-form-item>
         </el-form>
         <div class="dialog-footer" v-if="isDisabled==false">
@@ -45,7 +64,7 @@
           <el-button @click="infoCancel">取 消</el-button>
         </div>
 
-        <div class="testInfo" v-if="isDisabled==true && contnentShow == true">
+        <div class="testInfo" v-if="isDisabled == true  && contnentShow == true">
           <el-collapse :value="data.map(item => item.id)">
             <el-collapse-item v-for="(item,index) in data" :key="index" :name="index">
               <template slot="title">
@@ -62,15 +81,33 @@
             </el-collapse-item>
           </el-collapse>
         </div>
+        <div class="dialog-footer" v-if="isDisabled">
+          <el-button type="primary">确 定</el-button>
+          <el-button @click="cancel">取 消</el-button>
+        </div>
       </el-col>
 
     </el-row>
+
+    <el-dialog title="定位" :visible.sync="lonLatOpen" v-if="lonLatOpen" width="1000px" append-to-body>
+      <lon-lat></lon-lat>
+    </el-dialog>
   </div>
 </template>
 
 <script>
   import TreeRender from '@/components/TreeRender'
+  import LonLat from "@/components/Location";
+  import {
+    addSpot,
+    listSpot,
+    deleteSpot
+  } from "@/api/projects/project";
   export default {
+    components: {
+      LonLat
+    },
+    props: ["subProjectId"],
     watch: {
       filterText(val) {
         this.$refs.tree.filter(val);
@@ -78,10 +115,10 @@
       treeData: {
         immediate: true,
         handler(val) {
-          val.forEach(item=>{
-            setTimeout(()=>{
+          val.forEach(item => {
+            setTimeout(() => {
               item.loading = false
-            },2000)
+            }, 2000)
           })
           if (val.length > 0) {
             this.contnentShow = true
@@ -99,13 +136,24 @@
       }
     },
     created() {
+      this.getDicts("cqndt_equipment_type").then(response => {
+        this.devTypeOptions = response.data;
+      });
+      this.getList();
       this.$nextTick(() => {
         // treeBox 元素的ref   value 绑定的node-key
         this.$refs.tree.setCurrentKey(1);
       });
-      for(var i = 0; i<this.treeData.length; i++){
-        this.treeData[0].loading = true;
-      }
+
+      this.$bus.$off("getPoints");
+      this.$bus.$on("getPoints", (points) => {
+        if (points.longitude && points.latitude) {
+          console.log(points);
+          this.infoForm.longitude = points.longitude
+          this.infoForm.latitude = points.latitude
+          this.lonLatOpen = false
+        }
+      })
     },
     data() {
       return {
@@ -119,6 +167,7 @@
         contnentShow: false,
         // 设备类型
         devTypeOptions: [],
+        lonLatOpen: false,
         data: [{
             id: 0,
             name: '基础定位',
@@ -140,58 +189,105 @@
             state: '审核中'
           },
         ],
+        // 非单个禁用
+        single: true,
+        // 非多个禁用
+        multiple: true,
         // 树形
-        treeData: [{
-          id: 1,
-          label: '一级 1',
-          loading: false
-        }, {
-          id: 2,
-          label: '一级 2',
-          loading: false
-        }, {
-          id: 3,
-          label: '一级 3',
-          loading: false
-        }],
+        treeData: [],
         defaultProps: {
           children: 'children',
-          label: 'label'
+          label: 'spotName'
         },
         rules: {
-          pointName: [{
+          spotName: [{
             required: true,
             message: "测点名称不能为空",
             trigger: "blur"
           }],
-          LongAndLatitude: [{
+          longitude: [{
             required: true,
-            message: "经纬度不能为空",
+            message: "经度不能为空",
             trigger: "blur"
           }],
-          devType: [{
+          latitude: [{
+            required: true,
+            message: "纬度不能为空",
+            trigger: "blur"
+          }],
+          equipmentType: [{
             required: true,
             message: "设备类型不能为空",
             trigger: "blur"
           }],
-        }
+          phoneType: [{
+            required: true,
+            message: "手机卡类型不能为空",
+            trigger: "blur"
+          }],
+          cardId: [{
+            required: true,
+            message: "卡号不能为空",
+            trigger: "blur"
+          }],
+        },
+        selectArr: []
       }
     },
     methods: {
       filterNode(value, data) {
         if (!value) return true;
-        return data.label.indexOf(value) !== -1;
+        return data.spotName.indexOf(value) !== -1;
       },
       //   添加测点
       addPoint() {
         this.isDisabled = false
       },
+      delPoint() {
+        var _this = this;
+        this.$confirm('是否确认删除项目编号为"' + _this.selectArr + '"的数据项?', "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(function () {
+          return deleteSpot(_this.selectArr);
+        }).then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
+        })
+      },
+      getList() {
+        listSpot({
+          subProjectId: this.subProjectId
+        }).then(res => {
+          this.treeData = res.rows
+          this.treeData.forEach(item => {
+            this.$set(item, 'loading', false)
+          })
+          for (var i = 0; i < this.treeData.length; i++) {
+            this.treeData[0].loading = true;
+          }
+        })
+      },
       infoSubmitForm() {
-
+        this.$refs["infoForm"].validate(valid => {
+          if (valid) {
+            addSpot(Object.assign({
+              subProjectId: this.subProjectId
+            }, this.infoForm)).then(res => {
+              this.msgSuccess("新增成功");
+              this.infoCancel();
+              this.getList();
+            })
+          }
+        })
       },
       infoCancel() {
         this.resetForm("infoForm");
         this.isDisabled = true;
+      },
+      cancel() {
+        this.$emit("closeDialog");
       },
       handelDel(event) {
         event.stopPropagation();
@@ -223,9 +319,12 @@
           }
         });
       },
+      getLocation() {
+        this.lonLatOpen = true;
+      },
       // 树形点击 
       handleNodeClick(data) {
-        this.treeData.forEach(item=>{
+        this.treeData.forEach(item => {
           item.loading = false
         })
         data.loading = true
@@ -234,15 +333,27 @@
         }, 1000)
 
       },
+      handleCheckChange(data, checked, indeterminate) {
+        var arr = this.$refs.tree.getCheckedNodes(true, false)
+        // 赋值
+        this.selectArr = []
+        arr && arr.length && arr.forEach(item => {
+          this.selectArr.push(item.spotId)
+        })
+        this.single = this.selectArr.length != 1
+        this.multiple = !this.selectArr.length
+      },
       handleDelete(s, d, n) { //删除节点
+        console.log(s, d, n);
         this.$confirm("是否删除此节点？", "提示", {
           confirmButtonText: "确认",
           cancelButtonText: "取消",
           type: "warning"
         }).then(() => {
-          //此处可通过ajax做删除操作
-        }).catch(() => {
-          return false;
+          return deleteSpot(d.spotId);
+        }).then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
         })
       }
     }
@@ -273,12 +384,6 @@
     font-weight: bold;
   }
 
-  .subList .header .addItem {
-    font-weight: normal;
-    color: #66b1ff;
-    cursor: pointer;
-  }
-
   .subList .searchInput {
     padding: 5px 10px;
     border-bottom: 1px solid #e6e6e6;
@@ -293,6 +398,14 @@
   /deep/ .el-tree-node__content {
     height: 40px;
     line-height: 40px !important;
+  }
+
+  ::v-deep .el-tree-node__content>label.el-checkbox {
+    margin-left: 5px;
+  }
+
+  ::v-deep .el-tree-node__expand-icon.is-leaf {
+    display: none;
   }
 
   /deep/ .topTilte {
