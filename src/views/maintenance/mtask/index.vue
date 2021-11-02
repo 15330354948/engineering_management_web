@@ -75,7 +75,7 @@
         </el-form>
       </div>
       <!-- 使用该组件获取点击通知 -->
-      <div style="position:absolute; right: 10px"><TableSearch :pageSign="pageSign"></TableSearch></div>
+      <div style="position:absolute; right: 10px"><TableSearch :pageSign="pageSign" :hideOpt="['Import']"></TableSearch></div>
     </div>
 
     <!-- 表格 -->

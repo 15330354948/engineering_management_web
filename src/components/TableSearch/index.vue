@@ -32,6 +32,11 @@
             isPrimary: true
           },
           {
+            label: '导入',
+            type: 'Import',
+            isPrimary: true,
+          },
+          {
             label: '导出',
             type: 'Export',
             isPrimary: true

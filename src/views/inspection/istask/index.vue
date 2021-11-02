@@ -58,7 +58,7 @@
       </div>
       <!-- 使用该组件获取点击通知 -->
       <div style="position: absolute; right: 30%">
-        <TableSearch :pageSign="pageSign" :hideOpt="['Create']"></TableSearch>
+        <TableSearch :pageSign="pageSign" :hideOpt="['Create', 'Import']"></TableSearch>
       </div>
     </div>
 

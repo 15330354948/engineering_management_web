@@ -11,8 +11,8 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" @click="handleQuery">搜索</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -20,35 +20,20 @@
       <el-col :span="1.5">
         <el-button
           type="primary"
-          icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
           v-hasPermi="['project:Project:add']"
         >新增</el-button>
       </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="success"
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['project:Project:edit']"
-        >修改</el-button>
-      </el-col> -->
       <el-col :span="1.5">
         <el-button
           type="primary"
-          size="mini"
           @click="handleExport"
           v-hasPermi="['project:Project:export']"
         >导出</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          type="primary"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['project:Project:remove']"
@@ -57,7 +42,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="watermarkList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="watermarkList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="水印模板" align="center" prop="watermarkName" />
       <el-table-column label="水印位置" align="center" prop="watermarkAddress" :formatter="addressFormat" />
@@ -136,14 +121,14 @@
     </el-dialog>
     <!-- 关联项目 -->
     <el-dialog :title="titleRelation" v-if="openRelation" :visible.sync="openRelation" width="1200px" append-to-body>
-      <projectDialog @closeDialog="closeDialog" :areaList="areaList" ref="son"></projectDialog>
+      <projectDialog @closeDialog="closeDialog" :watermarkId="watermarkId" :areaList="areaList" ref="son"></projectDialog>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { listWatermark, getWatermark, delWatermark, addWatermark, updateWatermark, exportWatermark } from "@/api/projects/watermark";
-import { listArea} from "@/api/area.js"
+import { listArea} from "@/api/common.js"
 import projectDialog from "./projectDialog.vue"
 export default {
   name: "Watermark",
@@ -193,6 +178,7 @@ export default {
         ],
       },
       areaList:[],//区域列表
+      watermarkId:undefined,//水印id
     };
   },
   created() {
@@ -316,8 +302,8 @@ export default {
     // 关联项目按钮
     handleRelation(row){
       this.openRelation=true;
-      console.log(222222)
-      this.titleRelation='水印：' + row.name + '  正在分配项目'
+      this.watermarkId=row.watermarkId;
+      this.titleRelation='水印：' + row.watermarkName + '  正在分配项目'
     },
     /** 提交按钮 */
     submitForm: function() {

@@ -2,8 +2,13 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item prop="assessmentName">
-        <el-input v-model="queryParams.assessmentName" placeholder="请输入考核模板名称" clearable size="small"
-          @keyup.enter.native="handleQuery" />
+        <el-input
+          v-model="queryParams.assessmentName"
+          placeholder="请输入考核模板名称"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleQuery">搜索</el-button>
@@ -19,14 +24,6 @@
           v-hasPermi="['project:Project:add']"
         >新增</el-button>
       </el-col>
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="success"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['project:Project:edit']"
-        >修改</el-button>
-      </el-col> -->
       <el-col :span="1.5">
         <el-button
           type="primary"
@@ -45,7 +42,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="assessmentList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="assessmentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="考核名称" align="center" prop="assessmentName" />
       <el-table-column label="考核模板类型" align="center" prop="type" :formatter="typeFormat" />
@@ -54,18 +51,38 @@
       <el-table-column label="备注" align="center" prop="remarks" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['project:Project:edit']">修改</el-button>
-          <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['project:Project:remove']">删除</el-button>
-          <el-button size="mini" type="text" icon="el-icon-document-copy" @click="handleUpdate(scope.row)"
-            v-hasPermi="['project:Project:edit']">复制</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+            v-hasPermi="['project:Project:edit']"
+          >修改</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+            v-hasPermi="['project:Project:remove']"
+          >删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-document-copy"
+            @click="handleUpdate(scope.row)"
+            v-hasPermi="['project:Project:edit']"
+          >复制</el-button>
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
-      @pagination="getList" />
+    
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="getList"
+    />
 
     <!-- 添加或修改考核对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
@@ -88,7 +105,7 @@
           <el-table :data="form.subAssessments">
             <el-table-column align="center" prop="assessmentId" >
               <template slot="header">
-                <span style="color:red">* </span>
+                <span style="color:red">*  </span>
                 <span>序号</span>
               </template>
               <template slot-scope="scope">
@@ -97,7 +114,7 @@
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
               <template slot="header">
-                <span style="color:red">* </span>
+                <span style="color:red">*  </span>
                 <span>考核项目名称</span>
               </template>
               <template slot-scope="scope">
@@ -106,16 +123,16 @@
             </el-table-column>
             <el-table-column align="center" prop="assessmentId">
               <template slot="header">
-                <span style="color:red">* </span>
+                <span style="color:red">*  </span>
                 <span>项目分数</span>
               </template>
               <template slot-scope="scope">
                 <el-input type="number" v-model="form.subAssessments[scope.$index].fraction" placeholder="请输入项目分数" />
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="assessmentId">
+            <el-table-column  align="center" prop="assessmentId">
               <template slot="header">
-                <span style="color:red">* </span>
+                <span style="color:red">*  </span>
                 <span>评价标准</span>
               </template>
               <template slot-scope="scope">
@@ -124,8 +141,12 @@
             </el-table-column>
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
               <template slot-scope="scope">
-                <el-button size="mini" type="text" icon="el-icon-delete"
-                  @click="handleDeleteAssessment(scope.$index,scope.row)">删除</el-button>
+                <el-button
+                  size="mini"
+                  type="text"
+                  icon="el-icon-delete"
+                  @click="handleDeleteAssessment(scope.$index,scope.row)"
+                >删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -143,14 +164,7 @@
 </template>
 
 <script>
-  import {
-    listAssessment,
-    getAssessment,
-    delAssessment,
-    addAssessment,
-    updateAssessment,
-    exportAssessment
-  } from "@/api/projects/assessment";
+import { listAssessment, getAssessment, delAssessment, addAssessment, updateAssessment, exportAssessment } from "@/api/projects/assessment";
 
 export default {
   name: "Assessment",
@@ -233,14 +247,38 @@ export default {
         subAssessments: [],
         remarks: undefined
       };
+      this.resetForm("form");
     },
-    created() {
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.pageNum = 1;
       this.getList();
-      this.getDicts("sys_normal_disable").then(response => {
-        this.statusOptions = response.data;
-      });
-      this.getDicts("cqndt_assessment_type").then(response => {
-        this.assessOptions = response.data;
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.assessmentId)
+      this.single = selection.length!=1
+      this.multiple = !selection.length
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset();
+      this.open = true;
+      this.title = "添加考核";
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset();
+      const assessmentId = row.assessmentId || this.ids
+      getAssessment(assessmentId).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "修改考核";
       });
     },
     /** 提交按钮 */
@@ -303,33 +341,31 @@ export default {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
-        }).then(function () {
+        }).then(function() {
           return delAssessment(assessmentIds);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
         })
-      },
-      /** 导出按钮操作 */
-      handleExport() {
-        const queryParams = this.queryParams;
-        this.$confirm('是否确认导出所有考核数据项?', "警告", {
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm('是否确认导出所有考核数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
-        }).then(function () {
+        }).then(function() {
           return exportAssessment(queryParams);
         }).then(response => {
           this.download(response.msg);
         })
-      },
-    }
-  };
-
+    },
+  }
+};
 </script>
 <style lang="scss" scoped>
-  .el-select {
-    width: 100%;
-  }
-
+.el-select{
+  width: 100%;
+}
 </style>

@@ -20,7 +20,7 @@
         </el-form>
       </div>
       <!-- 使用该组件获取点击通知 -->
-      <TableSearch :pageSign="pageSign" :hideOpt="['Export']"></TableSearch>
+      <TableSearch :pageSign="pageSign" :hideOpt="['Export', 'Import']"></TableSearch>
     </div>
     <template>
       <el-table

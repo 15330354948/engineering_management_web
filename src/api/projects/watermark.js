@@ -14,7 +14,14 @@ export function getWatermark(watermarkId) {
     method: 'get'
   })
 }
-
+// 水印管理关联项目
+export function relation(data) {
+  return request({
+    url: '/backstage/watermark/relation',
+    method: 'put',
+    data: data
+  })
+}
 // 新增水印
 export function addWatermark(data) {
   return request({
