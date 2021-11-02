@@ -13,7 +13,7 @@
       </div>
       
       <div class="each-line special-line">
-        <el-form-item label="巡检项">
+        <el-form-item label="巡检项" prop='subProject1'>
           <el-button @click="addRow()" type="text">添加项</el-button>
           <el-table
             :data="tableData"
@@ -201,8 +201,8 @@ export default {
           { required: true, message: '请输入巡检模板名称', trigger: 'change'  },
           { required: true, message: '最大长度不能超过64', trigger: 'change', max: 64 }
         ],
-        deviceType: [
-          { required: true, message: '请选择设备类型', trigger: 'change' }
+        subProject1: [
+          { required: true, message: '巡检项必填', trigger: 'change' }
         ]
       }
     }
