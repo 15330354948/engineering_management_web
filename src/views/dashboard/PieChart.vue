@@ -32,6 +32,14 @@ export default {
       chart: null
     }
   },
+  watch: {
+    pieData: {
+      deep: true,
+      handler(val) {
+        this.setOptions(val)
+      }
+    }
+  },
   mounted() {
     this.$nextTick(() => {
       this.initChart()
@@ -47,7 +55,9 @@ export default {
   methods: {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
-
+      this.setOptions(this.pieData)  
+    },
+    setOptions(pieData){
       this.chart.setOption({
         color:['#ffcc99','#9583ff','#b530cd','#ff6992','#ffea5d'],
         title:{
@@ -94,7 +104,7 @@ export default {
             labelLine: {
               show: false
             },
-            data: this.pieData,
+            data: pieData,
             animationEasing: 'cubicInOut',
             animationDuration: 2600
           }

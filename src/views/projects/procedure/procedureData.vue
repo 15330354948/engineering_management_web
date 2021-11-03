@@ -2,7 +2,7 @@
   <div>
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="工序管理名称" prop="procedureName">
-        <el-input v-model="form.procedureName" maxlength="6" placeholder="请输入工序管理名称" />
+        <el-input v-model="form.procedureName" placeholder="请输入工序管理名称" />
       </el-form-item>
       <el-form-item label="工序">
         <el-row>
@@ -39,7 +39,7 @@
                 </el-select>
               </el-form-item>
               <el-form-item class="is-required" label="参与审核权限">
-                <el-select @change="handleChange" v-model="form.cqndtSubProcedureList[nameIndex].auditAuthority" placeholder="请选择参与审核权限" clearable>
+                <el-select @change="handleChange" v-model="form.cqndtSubProcedureList[nameIndex].auditAuthority" placeholder="请选择参与审核权限" :multiple="true" clearable>
                   <el-option
                     v-for="dict in auditAuthorityOptions"
                     :key="dict.dictValue"
@@ -55,7 +55,7 @@
                 <el-col :span="4">
                   <el-switch @click="handleChange" v-model="form.cqndtSubProcedureList[nameIndex].operationGuide"></el-switch>
                 </el-col>
-                <el-col :span="20">
+                <el-col :span="20" v-if="form.cqndtSubProcedureList[nameIndex].operationGuide">
                   <el-upload
                   ref="upload"
                   class="upload-demo"
@@ -76,7 +76,7 @@
                 <el-col :span="4">
                   <el-switch @change="handleChange" v-model="form.cqndtSubProcedureList[nameIndex].safetySpecification"></el-switch>
                 </el-col>
-                <el-col :span="20">
+                <el-col :span="20" v-if="form.cqndtSubProcedureList[nameIndex].safetySpecification">
                   <el-upload
                   ref="upload"
                   class="upload-demo"
@@ -97,7 +97,7 @@
                 <el-col :span="4">
                   <el-switch @change="handleChange" v-model="form.cqndtSubProcedureList[nameIndex].materials"></el-switch>
                 </el-col>
-                <el-col :span="20">
+                <el-col :span="20" v-if="form.cqndtSubProcedureList[nameIndex].materials">
                   <el-upload
                   ref="upload"
                   class="upload-demo"
@@ -145,26 +145,17 @@
               </el-form-item>
               <el-form-item label="操作指南">
                 <el-col :span="4">
-                  <el-switch v-model="test.zn"></el-switch>
-                </el-col>
-                <el-col :span="20">
-                  <el-button @click="msgError('请选择左侧工序')" size="small" type="text">上传附件</el-button>
+                  <el-switch disabled v-model="test.zn"></el-switch>
                 </el-col>
               </el-form-item>
               <el-form-item label="安全规范">
                 <el-col :span="4">
-                  <el-switch v-model="test.gf"></el-switch>
-                </el-col>
-                <el-col :span="20">
-                  <el-button @click="msgError('请选择左侧工序')" size="small" type="text">上传附件</el-button>
+                  <el-switch disabled v-model="test.gf"></el-switch>
                 </el-col>
               </el-form-item>
               <el-form-item label="物料清单">
                 <el-col :span="4">
-                  <el-switch v-model="test.wl"></el-switch>
-                </el-col>
-                <el-col :span="20">
-                  <el-button @click="msgError('请选择左侧工序')" size="small" type="text">上传附件</el-button>
+                  <el-switch disabled v-model="test.wl"></el-switch>
                 </el-col>
               </el-form-item>
             </div>
@@ -246,8 +237,11 @@ export default {
       nameList:[],//工序名称列表
       nameIndex:undefined,//编辑工序名称index
       isEditProcess:false,
-      test:{},
+      test:{
+        fw:50,
+      },
       isEdit:false,
+      isCopy:false,
     }
   },
   created(){
@@ -283,8 +277,28 @@ export default {
         this.nameIndex=0;
         this.form = response.data;
         this.nameList=this.form.cqndtSubProcedureList.map(item=>{return item.procedureName;})
+        if(this.isCopy){
+          this.form.procedureId=undefined;
+          this.form.procedureName=this.form.procedureName+ '_副本';
+        }
         this.form.cqndtSubProcedureList.forEach(item=>{
           item.type=item.type.toString()
+          item.auditAuthority=item.auditAuthority.split(",");
+          if(item.operationGuide==0){
+            item.operationGuide=true
+          }else{
+            item.operationGuide=false
+          }
+          if(item.safetySpecification==0){
+            item.safetySpecification=true
+          }else{
+            item.safetySpecification=false
+          }
+          if(item.materials==0){
+            item.materials=true
+          }else{
+            item.materials=false
+          }
           // 修改字段名
           if(item.authorityFiles){
             item.authorityFiles=JSON.parse(JSON.stringify(item.authorityFiles).replace(/fileName/g,"name"))
@@ -314,23 +328,30 @@ export default {
               }else{
                 flag=true;
               }
-              item.authorityId=item.authorityId.toString()
-              item.guideId=item.guideId.toString()
-              item.specificationId=item.specificationId.toString()
+              item.auditAuthority=item.auditAuthority.toString()
               if(item.operationGuide){
-                item.operationGuide=0
+                item.operationGuide=0;
+                item.authorityId=item.authorityFiles.map(id=>id.fileId).toString();
               }else{
-                item.operationGuide=1
+                item.operationGuide=1;
+                item.authorityFiles=[];
+                item.authorityId=undefined
               }
               if(item.safetySpecification){
-                item.safetySpecification=0
+                item.safetySpecification=0;
+                item.guideId=item.guideFiles.map(id=>id.fileId).toString();
               }else{
-                item.safetySpecification=1
+                item.safetySpecification=1;
+                item.guideFiles=[];
+                item.guideId=undefined
               }
               if(item.materials){
-                item.materials=0
+                item.materials=0;
+                item.specificationId=item.specificationFiles.map(id=>id.fileId).toString();
               }else{
-                item.materials=1
+                item.materials=1;
+                item.specificationFiles=[];
+                item.specificationId=undefined
               }
             });
             if(flag){
@@ -397,8 +418,8 @@ export default {
             let obj={
               procedureName:undefined,//子工序管理名称
               type:undefined,//子工序类型
-              auditAuthority:undefined,//参与审核权限
-              buildLimit:undefined,//施工范围
+              auditAuthority:[],//参与审核权限
+              buildLimit:50,//施工范围
               authorityId:[],//操作指南文件id
               guideId:[],//安全规范文件id
               materials:undefined,//物料清单
@@ -427,13 +448,10 @@ export default {
     handleFileSuccess(res, file, i) {//i=1表示上传操作指南；i=2表示上传安全规范；i=3表示上传物料清单
       let data=JSON.parse(JSON.stringify(res.data).replace(/fileName/g,"name"))
       if(i==1){
-        this.form.cqndtSubProcedureList[this.nameIndex].authorityId.push(res.data.fileId);
         this.form.cqndtSubProcedureList[this.nameIndex].authorityFiles.push(data);
       }else if(i==2){
-        this.form.cqndtSubProcedureList[this.nameIndex].guideId.push(res.data.fileId);
         this.form.cqndtSubProcedureList[this.nameIndex].guideFiles.push(data);
       }else if(i==3){
-        this.form.cqndtSubProcedureList[this.nameIndex].specificationId.push(res.data.fileId);
         this.form.cqndtSubProcedureList[this.nameIndex].specificationFiles.push(data);
       }
       this.upload.open = false;

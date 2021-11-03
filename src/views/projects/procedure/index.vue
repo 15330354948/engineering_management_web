@@ -53,7 +53,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
-                @click="handleUpdate(scope.row)"
+                @click="handleUpdate(scope.row,1)"
                 v-hasPermi="['project:Project:edit']"
               >修改</el-button>
               <el-button
@@ -67,7 +67,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-document-copy"
-                @click="handleUpdate(scope.row)"
+                @click="handleUpdate(scope.row,2)"
                 v-hasPermi="['project:Project:edit']"
               >复制</el-button>
             </template>
@@ -76,9 +76,9 @@
       </el-tab-pane>
       <el-tab-pane label="规范管理" name="second">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item prop="procedureName">
+          <el-form-item prop="standardName">
             <el-input
-              v-model="queryParams.procedureName"
+              v-model="queryParams.standardName"
               placeholder="请输入规范名称"
               clearable
               size="small"
@@ -86,8 +86,8 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="cyan" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+            <el-button type="primary" @click="handleQuery">搜索</el-button>
+            <el-button type="primary" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
         <el-row :gutter="10" class="mb8">
@@ -127,7 +127,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
-                @click="handleUpdate(scope.row)"
+                @click="handleUpdate(scope.row,1)"
                 v-hasPermi="['project:Project:edit']"
               >修改</el-button>
               <el-button
@@ -141,7 +141,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-document-copy"
-                @click="handleUpdate(scope.row)"
+                @click="handleUpdate(scope.row,2)"
                 v-hasPermi="['project:Project:edit']"
               >复制</el-button>
             </template>
@@ -200,7 +200,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         procedureName: undefined,
-        procedureName: undefined,
+        standardName: undefined,
         status: undefined
       },
       activeName:'first',//tab默认选中值
@@ -255,6 +255,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.queryParams.standardName=undefined;
+      this.queryParams.procedureName=undefined;
       this.resetForm("queryForm");
       this.handleQuery();
     },
@@ -291,22 +293,34 @@ export default {
       }
     },
     /** 修改按钮操作 */
-    handleUpdate(row) {
+    handleUpdate(row,i) {
       this.open = true;
       this.$nextTick(()=>{
         this.$refs.mychild.reset();
       })
       if(this.activeName=='first'){
         this.procedureId = row.procedureId || this.ids
-        this.title = "修改工序";
         this.$nextTick(()=>{
+          if(i==2){
+            this.title = "复制工序";
+            this.$refs.mychild.isCopy=true;
+          }else{
+            this.title = "修改工序";
+            this.$refs.mychild.isCopy=false;
+          }
           this.$refs.mychild.getProcedure();
           this.$refs.mychild.isEdit=true;
         })
       }else{
         this.standardId = row.standardId || this.ids
-        this.title = "修改规范";
         this.$nextTick(()=>{
+          if(i==2){
+            this.title = "复制规范";
+            this.$refs.mychild.isCopy=true;
+          }else{
+            this.title = "修改规范";
+            this.$refs.mychild.isCopy=false;
+          }
           this.$refs.mychild.getStandard();
         })
       }

@@ -482,6 +482,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.dateRange=[];
+      this.dateRange2=[];
       this.resetForm("queryForm");
       this.handleQuery();
     },

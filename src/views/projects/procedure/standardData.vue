@@ -172,6 +172,7 @@ export default {
       subProcedureList:[],//子工序列表
       cqndtProcedureList:[],//所属工序
       cqndtSubStandardList:[],//步骤
+      isCopy:false,
     }
   },
   created(){
@@ -199,6 +200,10 @@ export default {
     getStandard(){//查询规范
       getStandard(this.standardId).then(response => {
         this.form = response.data;
+        if(this.isCopy){
+          this.form.standardId=undefined;
+          this.form.standardName=this.form.standardName+ '_副本';
+        }
         this.cqndtProcedureList=this.form.cqndtProcedureList;
         this.cqndtSubStandardList=this.form.cqndtSubStandardList;
         this.form.equipmentType=this.form.equipmentType.toString();

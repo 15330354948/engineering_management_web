@@ -29,6 +29,14 @@ export default {
       required: true
     }
   },
+  watch: {
+    BarData: {
+      deep: true,
+      handler(val) {
+        this.setOptions(val)
+      }
+    }
+  },
   data() {
     return {
       chart: null
@@ -49,7 +57,9 @@ export default {
   methods: {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
-
+      this.setOptions(this.BarData)
+    },
+    setOptions(BarData){
       this.chart.setOption({
         color:['#61a4e4'],
         tooltip: {
@@ -68,7 +78,7 @@ export default {
         },
         xAxis: [{
           type: 'category',
-          data: this.BarData.xAxis,
+          data: BarData.xAxis,
           axisTick: {
             alignWithLabel: true
           },

@@ -7,28 +7,28 @@
           <div class="build-item">
             <h3 class="build-item-title">项目信息</h3>
             <ul class="porject-info">
-              <li><span>111</span><span>项目</span></li>
-              <li><span>111</span><span>子项</span></li>
-              <li><span>111</span><span>测点</span></li>
+              <li><span>{{projectData.project}}</span><span>项目</span></li>
+              <li><span>{{projectData.subProject}}</span><span>子项</span></li>
+              <li><span>{{projectData.spot}}</span><span>测点</span></li>
             </ul>
           </div>
           <div class="build-item construction">
             <h3 class="build-item-title">施工进度</h3>
             <ul class="construction-info">
-              <li><span>111</span><span>总任务</span></li>
-              <li><span>111</span><span>待审核</span></li>
-              <li><span>111</span><span>未开始</span></li>
-              <li><span>111</span><span>驳回</span></li>
-              <li><span>111</span><span>已上传</span></li>
-              <li><span>111</span><span>通过</span></li>
+              <li><span>{{projectData.task}}</span><span>总任务</span></li>
+              <li><span>{{projectData.examine}}</span><span>待审核</span></li>
+              <li><span>{{projectData.noBegin}}</span><span>未开始</span></li>
+              <li><span>{{projectData.reject}}</span><span>驳回</span></li>
+              <li><span>{{projectData.upload}}</span><span>已上传</span></li>
+              <li><span>{{projectData.pass}}</span><span>通过</span></li>
             </ul>
           </div>
           <div class="build-item">
             <h3 class="build-item-title">计划进度</h3>
             <ul class="plan-info">
-              <li><span>111</span><span>今日未完成人员</span></li>
-              <li><span>111</span><span>本周未完成人员</span></li>
-              <li><span>111</span><span>本月未完成人员</span></li>
+              <li><span>{{projectData.todayPe}}</span><span>今日未完成人员</span></li>
+              <li><span>{{projectData.weekPe}}</span><span>本周未完成人员</span></li>
+              <li><span>{{projectData.monthPe}}</span><span>本月未完成人员</span></li>
             </ul>
           </div>
         </div>
@@ -37,9 +37,9 @@
         <h3 class="build-title">巡检</h3>
         <div class="inspection-cont">
           <ul>
-            <li><span>1</span><span><span>巡检总数</span></span></li>
-            <li><span>1</span><span><span>进行中</span></span></li>
-            <li><span>1</span><span><span>已完成</span></span></li>
+            <li><span>{{inspectionData.inspectionToday}}</span><span><span>巡检总数</span></span></li>
+            <li><span>{{inspectionData.running}}</span><span><span>进行中</span></span></li>
+            <li><span>{{inspectionData.finish}}</span><span><span>已完成</span></span></li>
           </ul>
           <div class="inspection-cont-chart">
             <div class="chart-wrapper">
@@ -54,7 +54,7 @@
           <div class="main">
             <div class="cont">
               <div class="title">维护任务</div>
-              <div class="count">4</div>
+              <div class="count">{{maintainData.maintainToday}}</div>
             </div>
           </div>
           <div class="maintain-cont-chart">
@@ -70,26 +70,26 @@
       <div class="comprehensive">
         <h4>累计基础数据</h4>
         <ul>
-          <li><span>单位数</span><span>67</span></li>  
-          <li><span>账户数</span><span>67</span></li>  
-          <li><span>通讯录</span><span>67</span></li>  
+          <li><span>单位数</span><span>{{comprehensiveData.dept}}</span></li>  
+          <li><span>账户数</span><span>{{comprehensiveData.account}}</span></li>  
+          <li><span>通讯录</span><span>{{comprehensiveData.link}}</span></li>  
         </ul>
       </div>
       <div class="comprehensive">
         <h4>本月考勤数据</h4>
         <ul>
-          <li><span>打卡数</span><span>67</span></li>  
-          <li><span>请假数</span><span>67</span></li>  
-          <li><span>补卡录</span><span>67</span></li>  
+          <li><span>打卡数</span><span>{{comprehensiveData.clock}}</span></li>  
+          <li><span>请假数</span><span>{{comprehensiveData.leave}}</span></li>  
+          <li><span>补卡录</span><span>{{comprehensiveData.card}}</span></li>  
         </ul>
       </div>
       <div class="comprehensive">
         <h4>本月日志数</h4>
         <ul>
-          <li><span>累计登录</span><span>67</span></li>  
-          <li><span>今日登录</span><span>67</span></li>  
-          <li><span>累计操作</span><span>67</span></li>  
-          <li><span>今日操作</span><span>67</span></li>  
+          <li><span>累计登录</span><span>{{comprehensiveData.sumLogin}}</span></li>  
+          <li><span>今日登录</span><span>{{comprehensiveData.todayLogin}}</span></li>  
+          <li><span>累计操作</span><span>{{comprehensiveData.sumOperation}}</span></li>  
+          <li><span>今日操作</span><span>{{comprehensiveData.todayOperation}}</span></li>  
         </ul>
       </div>
     </div>
@@ -99,6 +99,7 @@
 <script>
 import PieChart from './dashboard/PieChart'
 import BarChart from './dashboard/BarChart'
+import {comprehensiveStatistics,inspectionStatistics,maintainStatistics,projectStatistics} from '@/api/index'
 export default {
   name: 'Index',
   components: {
@@ -108,19 +109,44 @@ export default {
   data() {
     return {
       pieData:[
-        { value: 320, name: '正常项≥80%' },
-        { value: 240, name: '正常项≥60%' },
-        { value: 149, name: '正常项≥40%' },
-        { value: 100, name: '正常项≥20%' },
-        { value: 59, name: '正常项≥0%' }
+        { value: undefined, name: '正常项≥80%' },
+        { value: undefined, name: '正常项≥60%' },
+        { value: undefined, name: '正常项≥40%' },
+        { value: undefined, name: '正常项≥20%' },
+        { value: undefined, name: '正常项≥0%' }
       ],
       BarData:{
         xAxis:['较差','一般','良好','优秀'],
-        yAxis:[1, 1, 0, 0]
-      }
+        yAxis:[]
+      },
+      comprehensiveData:{},
+      inspectionData:{},
+      maintainData:{},
+      projectData:{}
     }
   },
+  created(){
+    comprehensiveStatistics().then(res=>{
+      this.comprehensiveData=res.data
+    });
+    inspectionStatistics().then(res=>{
+      this.inspectionData=res.data;
+      this.pieData[0].value=res.data.normal0;
+      this.pieData[1].value=res.data.normal20;
+      this.pieData[2].value=res.data.normal40;
+      this.pieData[3].value=res.data.normal60;
+      this.pieData[4].value=res.data.normal80;
+    });
+    maintainStatistics().then(res=>{
+      this.maintainData=res.data;
+      this.BarData.yAxis=[res.data.bad,res.data.ordinary,res.data.good,res.data.perfect];
+    });
+    projectStatistics().then(res=>{
+      this.projectData=res.data
+    })
+  },
   methods: {
+    
   }
 }
 </script>

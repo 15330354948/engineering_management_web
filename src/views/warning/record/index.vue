@@ -7,33 +7,33 @@
       v-show="showSearch"
       label-width="68px"
     >
-      <el-form-item prop="recordCode">
+      <el-form-item prop="receiver">
         <el-input
-          v-model="queryParams.recordCode"
+          v-model="queryParams.receiver"
           placeholder="请输入接收用户名"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item prop="status">
+      <el-form-item prop="sendFlag">
         <el-select
-          v-model="queryParams.status"
+          v-model="queryParams.sendFlag"
           placeholder="请选择发送标识"
           clearable
           size="small"
         >
           <el-option
-            v-for="dict in statusOptions"
+            v-for="dict in flagOptions"
             :key="dict.dictValue"
             :label="dict.dictLabel"
             :value="dict.dictValue"
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="status">
+      <el-form-item prop="sendResult">
         <el-select
-          v-model="queryParams.status"
+          v-model="queryParams.sendResult"
           placeholder="请选择发送状态"
           clearable
           size="small"
@@ -46,7 +46,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="status">
+      <el-form-item>
         <el-date-picker
           v-model="dateRange"
           size="small"
@@ -90,12 +90,12 @@
       :data="recordList"
       border
     >
-      <el-table-column label="接收用户名" align="center" prop="recordId" />
-      <el-table-column label="账号" align="center" prop="recordCode" />
-      <el-table-column label="发送时间" align="center" prop="recordSort" />
-      <el-table-column label="发送标识" align="center" prop="recordSort" />
-      <el-table-column label="发送状态" align="center" prop="status" :formatter="statusFormat" />
-      <el-table-column label="内容" align="center" prop="recordName" />
+      <el-table-column label="接收用户名" align="center" prop="receiver" />
+      <el-table-column label="账号" align="center" prop="phone" />
+      <el-table-column label="发送时间" align="center" prop="sendTime" />
+      <el-table-column label="发送标识" align="center" prop="sendFlag" :formatter="flagFormat" />
+      <el-table-column label="发送状态" align="center" prop="sendResult" :formatter="statusFormat" />
+      <el-table-column label="内容" align="center" prop="content" />
     </el-table>
 
     <pagination
@@ -135,36 +135,27 @@ export default {
       open: false,
       // 状态数据字典
       statusOptions: [],
+      // 标识数据字典
+      flagOptions: [],
       // 日期范围
       dateRange: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        recordCode: undefined,
-        recordName: undefined,
-        status: undefined,
-      },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        recordName: [
-          { required: true, record: "通知名称不能为空", trigger: "blur" },
-        ],
-        recordCode: [
-          { required: true, record: "通知编码不能为空", trigger: "blur" },
-        ],
-        recordSort: [
-          { required: true, record: "通知顺序不能为空", trigger: "blur" },
-        ],
+        receiver: undefined,
+        sendResult: undefined,
+        sendFlag: undefined,
       },
     };
   },
   created() {
     this.getList();
-    this.getDicts("sys_normal_disable").then((response) => {
+    this.getDicts("send_result").then((response) => {
       this.statusOptions = response.data;
+    });
+    this.getDicts("send_flag").then((response) => {
+      this.flagOptions = response.data;
     });
   },
   methods: {
@@ -181,25 +172,16 @@ export default {
     },
     // 通知状态字典翻译
     statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
+      return this.selectDictLabel(this.statusOptions, row.sendResult);
+    },
+    // 通知状态字典翻译
+    flagFormat(row, column) {
+      return this.selectDictLabel(this.flagOptions, row.sendFlag);
     },
     // 取消按钮
     cancel() {
       this.open = false;
       this.openSure = false;
-      this.reset();
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        recordId: undefined,
-        recordCode: undefined,
-        recordName: undefined,
-        recordSort: 0,
-        status: "0",
-        remark: undefined,
-      };
-      this.resetForm("form");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -208,6 +190,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.dateRange=[];
       this.resetForm("queryForm");
       this.handleQuery();
     },
