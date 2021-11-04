@@ -285,7 +285,7 @@
           <slot></slot>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="slotStatus = {}">取 消</el-button>
+          <el-button @click="editDialog = false">取 消</el-button>
           <el-button type="primary" @click="feedbackEdit">保 存</el-button>
         </span>
       </el-dialog>
@@ -299,8 +299,9 @@
         <div slot="title" style="height: 43px;background: #f8f8f8;margin-left: -20px;position:absolute;z-index:20;padding-left:10px;" class="header-title">
           定位
           <div
-            @click="() => (fullScreen = !fullScreen)"
-            class="fullscreen"
+            @click="gps = false"
+            class="el-icon-close hoverelclose"
+            style="margin-right: 10px;"
           ></div>
         </div>
         <div class="baseMap" style="overflow: hidden;">
@@ -383,18 +384,8 @@
           </div>
           <div></div>
         </div>
-        <div slot="title" style="background: #f8f8f8;margin-left: -20px;position:absolute;z-index:20;padding-left:10px;border-radius: 20px;" class="header-title">
-          更换资质
-          <div
-            @click="() => (fullScreen = !fullScreen)"
-            class="fullscreen"
-          ></div>
-        </div>
-        <div class="slot-container">
-          <slot></slot>
-        </div>
         <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="lonAndLatPreservation">保 存</el-button>
+          <el-button type="primary" @click="hideWindow">保 存</el-button>
         </span>
       </el-dialog>
       <!-- 资质文件上传 -->
@@ -419,27 +410,18 @@
           <div class="uploadAttachment">
             <span style="margin-top: 10px">上传附件：</span>
             <el-upload
+              ref="demos"
               class="upload-demo"
               action="/"
               :on-change="changeFiles"
-              :http-request="updatingFiles"
-              :show-file-list="isSHow">
+              :http-request="updatingFiles">
               <el-button>添加附件</el-button>
             </el-upload>
           </div>
         <div></div>
         </div>
-        <div slot="title" style="background: #f8f8f8;margin-left: -20px;position:absolute;z-index:20;padding-left:10px;border-radius: 20px;" class="header-title">
-          添加资质
-          <div
-            @click="() => (fullScreen = !fullScreen)"
-            class="fullscreen"
-          ></div>
-        </div>
-        <div class="slot-container">
-          <slot></slot>
-        </div>
         <span slot="footer" class="dialog-footer">
+          <el-button @click="cancelUpload">取 消</el-button>
           <el-button type="primary" @click="saveQualification">保 存</el-button>
         </span>
       </el-dialog>
@@ -553,6 +535,13 @@ export default {
     };
   },
   methods: {
+    cancelUpload() {
+      this.$refs.demos.clearFiles();
+      this.qualificationDialog = false
+    },
+    hideWindow() {
+      this.qualificationUpload = false
+    },
     // 资质保存
     async saveQualification() {
       let saveFileId = []
@@ -575,7 +564,8 @@ export default {
 
       await qualificationUpload(
         companyQualifications
-     )
+      )
+      this.$refs.demos.clearFiles();
       const result = await qualificationUploadLstQuery(this.companyId)
       this.qualificationFormData = result.data.map((item) => {
         if (item.grade === '1') {
@@ -592,6 +582,7 @@ export default {
     },
     // 文件选中
     changeFiles(file, fileList){
+      console.log(fileList)
       this.qualificationFile = fileList
       this.isSHow = true
     },
@@ -1019,8 +1010,8 @@ export default {
             creUnit: true,
           };
           const {data} = await getCatg()
-          this.creAnOrganizationForm.catg = data
-          this.creAnOrganizationForm.currentlyCreatedCatg = this.currentlySelectedUnit
+          this.$set(this.creAnOrganizationForm, 'catg', data)
+          this.$set(this.creAnOrganizationForm, 'currentlyCreatedCatg', this.currentlySelectedUnit)
           this.dialogInfo = {
             dialogShow: true,
             dialogTitle: "单位新增",
@@ -1193,6 +1184,12 @@ export default {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
+      .hoverelclose:hover {
+        color: #409eff;
+        cursor: pointer;
+      }
+ 
       .fullscreen {
         width: 14px;
         height: 14px;
