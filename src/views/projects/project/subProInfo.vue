@@ -76,7 +76,21 @@
                   </div>
                 </div>
               </template>
-              <div class="content"></div>
+              <div class="content">
+                <div class="photo">
+                  <viewer :images="images" @inited="inited" class="inspectionPhotos-viewer" ref="viewer">
+                    <template>
+                      <span class="border" v-for="(item,ind) in (imageList[index] ? imageList[index].fileList : '')"
+                        :key="ind">
+                        <img class="viewer_image" :src="item.url" />
+                        <div class="fileName">{{item.fileName}}</div>
+                      </span>
+
+                      <!-- {{ scope.options }} -->
+                    </template>
+                  </viewer>
+                </div>
+              </div>
               <p>备注：</p>
             </el-collapse-item>
           </el-collapse>
@@ -101,10 +115,16 @@
   import {
     addSpot,
     listSpot,
-    deleteSpot
+    deleteSpot,
+    infoSpot
   } from "@/api/projects/project";
+  import "viewerjs/dist/viewer.css";
+  import {
+    component as Viewer
+  } from "v-viewer";
   export default {
     components: {
+      Viewer,
       LonLat
     },
     props: ["subProjectId"],
@@ -115,12 +135,16 @@
       treeData: {
         immediate: true,
         handler(val) {
-          val.forEach(item => {
-            setTimeout(() => {
-              item.loading = false
-            }, 2000)
-          })
           if (val.length > 0) {
+            this.$nextTick(() => {
+              // console.log(this.$refs.tree);
+              console.log(this.$refs.tree);
+              this.$refs.tree.setCurrentKey(val[0].spotId)
+            })
+            infoSpot(val[0].spotId).then(res => {
+              res.data.equipmentType += ""
+              this.infoForm = res.data;
+            })
             this.contnentShow = true
           } else {
             this.contnentShow = false
@@ -157,6 +181,12 @@
     },
     data() {
       return {
+        imageList: [],
+        images: [
+          "https://picsum.photos/200/200",
+          "https://picsum.photos/300/200",
+          "https://picsum.photos/250/200",
+        ],
         //   手风琴默认展开
         activeName: ['1', '2', '3', '4'],
         icon: 'el-icon-delete',
@@ -189,8 +219,6 @@
             state: '审核中'
           },
         ],
-        // 非单个禁用
-        single: true,
         // 非多个禁用
         multiple: true,
         // 树形
@@ -231,10 +259,14 @@
             trigger: "blur"
           }],
         },
-        selectArr: []
+        selectArr: [],
+        treeIndex: false
       }
     },
     methods: {
+      inited(viewer) {
+        this.$viewer = viewer;
+      },
       filterNode(value, data) {
         if (!value) return true;
         return data.spotName.indexOf(value) !== -1;
@@ -242,6 +274,7 @@
       //   添加测点
       addPoint() {
         this.isDisabled = false
+        this.infoForm = {}
       },
       delPoint() {
         var _this = this;
@@ -260,13 +293,15 @@
         listSpot({
           subProjectId: this.subProjectId
         }).then(res => {
-          this.treeData = res.rows
-          this.treeData.forEach(item => {
-            this.$set(item, 'loading', false)
-          })
-          for (var i = 0; i < this.treeData.length; i++) {
-            this.treeData[0].loading = true;
+          if (res.rows.length > 0) {
+            this.imageList = res.rows[this.treeIndex || 0].list
+            this.treeData = res.rows
+            this.treeData.forEach(item => {
+              this.$set(item, 'loading', false)
+            })
           }
+
+          this.multiple = true
         })
       },
       infoSubmitForm() {
@@ -276,7 +311,7 @@
               subProjectId: this.subProjectId
             }, this.infoForm)).then(res => {
               this.msgSuccess("新增成功");
-              this.infoCancel();
+              this.isDisabled = true;
               this.getList();
             })
           }
@@ -284,6 +319,7 @@
       },
       infoCancel() {
         this.resetForm("infoForm");
+        this.getList();
         this.isDisabled = true;
       },
       cancel() {
@@ -324,13 +360,17 @@
       },
       // 树形点击 
       handleNodeClick(data) {
+        this.isDisabled = true;
         this.treeData.forEach(item => {
           item.loading = false
         })
         data.loading = true
-        setTimeout(() => {
+        this.imageList = data.list
+        infoSpot(data.spotId).then(res => {
           data.loading = false
-        }, 1000)
+          res.data.equipmentType += ""
+          this.infoForm = res.data;
+        })
 
       },
       handleCheckChange(data, checked, indeterminate) {
@@ -340,7 +380,6 @@
         arr && arr.length && arr.forEach(item => {
           this.selectArr.push(item.spotId)
         })
-        this.single = this.selectArr.length != 1
         this.multiple = !this.selectArr.length
       },
       handleDelete(s, d, n) { //删除节点
@@ -472,6 +511,43 @@
   /deep/ .el-col-19 {
     height: 700px;
     overflow: scroll;
+  }
+
+  .photo {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .photo .inspectionPhotos-viewer {
+    display: flex;
+  }
+
+  .photo .border {
+    display: inline-block;
+    height: 100%;
+    border: 1px solid #dfe6ec;
+    margin: 5px 5px 0 5px;
+    position: relative;
+  }
+
+  .photo .viewer_image {
+    height: 120px;
+    padding: 5px 5px 0 5px;
+  }
+
+  .photo .fileName {
+    width: 100%;
+    height: 30px;
+    background-color: rgba(0, 0, 0, .3);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    color: #fff;
+    line-height: 30px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
 </style>

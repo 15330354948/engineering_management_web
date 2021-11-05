@@ -212,6 +212,15 @@ export function listSpot(query) {
   })
 }
 
+// 获取测点信息详细信息
+export function infoSpot(id) {
+  return request({
+    url: '/backstage/spot/' + id,
+    method: 'get',
+  })
+}
+
+
 // 测点删除
 export function deleteSpot(ids) {
   return request({
@@ -220,4 +229,29 @@ export function deleteSpot(ids) {
   })
 }
 
+// 查询项目分配信息
+export function getDistribution(id) {
+  return request({
+    url: '/backstage/project/getDistribution/' + id,
+    method: 'get',
+  })
+}
+
+// 查询施工人员
+export function getPerson(query) {
+  return request({
+    url: '/system/user/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 修改项目分配人员
+export function editPerson(query) {
+  return request({
+    url: '/backstage/project/distribution',
+    method: 'put',
+    data: query
+  })
+}
 
