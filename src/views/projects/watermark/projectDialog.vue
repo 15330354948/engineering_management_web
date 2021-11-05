@@ -213,7 +213,12 @@ export default {
         },
         // 关联操作
         handleRelations(row,i){//i=0表示关联；i=1取消关联
-            const projectIds = row.projectId || this.ids;
+            let projectIds;
+            if(row){
+                projectIds=row.projectId
+            }else{
+                projectIds=this.ids
+            }
             relation({projectId:projectIds,waterMartType:i}).then(res=>{
                 if(i==0){
                     this.msgSuccess("关联成功");

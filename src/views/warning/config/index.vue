@@ -7,24 +7,24 @@
       v-show="showSearch"
       label-width="68px"
     >
-      <el-form-item prop="configCode">
+      <el-form-item prop="templateName">
         <el-input
-          v-model="queryParams.configCode"
+          v-model="queryParams.templateName"
           placeholder="请输入预警提醒名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item prop="status">
+      <el-form-item prop="warnType">
         <el-select
-          v-model="queryParams.status"
+          v-model="queryParams.warnType"
           placeholder="请选择类型"
           clearable
           size="small"
         >
           <el-option
-            v-for="dict in statusOptions"
+            v-for="dict in typeOptions"
             :key="dict.dictValue"
             :label="dict.dictLabel"
             :value="dict.dictValue"
@@ -54,36 +54,45 @@
       v-loading="loading"
       :data="configList" border
     >
-      <el-table-column label="预警提醒名称" align="center" prop="configId" />
-      <el-table-column label="类型" align="center" prop="configCode" />
-      <el-table-column label="站内" align="center" prop="status">
+      <el-table-column label="预警提醒名称" align="center" prop="templateName" />
+      <el-table-column label="类型" align="center" prop="warnType" :formatter="typeFormat" />
+      <el-table-column label="站内" align="center" prop="stationStatus">
         <template slot-scope="scope">
-          <span v-if="!configList[scope.$index].edit">{{scope.row.remark}}开启</span>
-          <el-switch v-else v-model="form.value1"></el-switch>
+          <div v-if="!configList[scope.$index].edit">
+            <span v-if="scope.row.stationStatus==1">开启</span>
+            <span v-if="scope.row.stationStatus==0">关闭</span>
+          </div>
+          <el-switch v-else v-model="form.stationStatus"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="短信" align="center" prop="configSort">
+      <el-table-column label="短信" align="center" prop="smsStatus">
         <template slot-scope="scope">
-          <span v-if="!configList[scope.$index].edit">{{scope.row.remark}}开启</span>
-          <el-switch v-else v-model="form.value2"></el-switch>
+          <div v-if="!configList[scope.$index].edit">
+            <span v-if="scope.row.smsStatus==1">开启</span>
+            <span v-if="scope.row.smsStatus==0">关闭</span>
+          </div>
+          <el-switch v-else v-model="form.smsStatus"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="模板" align="center" prop="configSort">
+      <el-table-column label="模板" align="center">
         <template slot-scope="scope">
           <span v-if="!configList[scope.$index].edit">短信模板</span>
           <span v-else style="color:#409eff;cursor:pointer;" @click="handleMould(scope.row)">短信模板</span>
         </template>
       </el-table-column>
-      <el-table-column label="发送范围" align="center" prop="status">
+      <el-table-column label="发送范围" align="center" prop="sendRange">
         <template slot-scope="scope">
-          <span v-if="!configList[scope.$index].edit">{{scope.row.remark}}开启</span>
-          <el-select v-else
-            v-model="form.value3"
-            placeholder="请选择发送发文"
+          <span v-if="!configList[scope.$index].edit">
+            {{configList[scope.$index].range}}
+          </span>
+          <el-select
+            v-else
+            v-model="form.sendRange"
+            placeholder="请选择发送范围"
             clearable
           >
             <el-option
-              v-for="dict in statusOptions"
+              v-for="dict in rangeOptions"
               :key="dict.dictValue"
               :label="dict.dictLabel"
               :value="dict.dictValue"
@@ -91,7 +100,7 @@
           </el-select>
         </template>
       </el-table-column>
-       <el-table-column
+      <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
@@ -147,22 +156,19 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="通用条件">
-              <el-button @click="handleAddName">项目名称</el-button>
-              <el-button @click="handleAddDay">天数</el-button>
+              <el-button @click="handleAddName" v-if="templateConditionsProjectName==0">项目名称</el-button>
+              <el-button @click="handleAddDay" v-if="templateConditionsDays==0">天数</el-button>
+              <el-button @click="handleAddchild" v-if="templateConditionsSubProjectName==0">子项目名称</el-button>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="站内模板">
-              <div class="content-editor" contenteditable="true" @click="getPos" v-html="innerHTML">
-                {{innerHTML}}
-              </div>
+              <div class="content-editor" ref="stationTemplate" contenteditable="true" @click="getPos" v-html="stationTemplate"></div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="短信模板">
-              <div class="content-editor" contenteditable="true" @click="getPos" v-html="innerHTML">
-                {{innerHTML}}
-              </div>
+              <div class="content-editor" ref="smsTemplate" contenteditable="true" @click="getPos" v-html="smsTemplate"></div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -200,13 +206,15 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      // 状态数据字典
-      statusOptions: [],
+      // 类型数据字典
+      typeOptions: [],
+      // 预警发送范围字典
+      rangeOptions:[],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        configCode: undefined,
+        templateName: undefined,
         configName: undefined,
         status: undefined,
       },
@@ -217,7 +225,7 @@ export default {
         configName: [
           { required: true, config: "预警配置名称不能为空", trigger: "blur" },
         ],
-        configCode: [
+        templateName: [
           { required: true, config: "预警配置编码不能为空", trigger: "blur" },
         ],
         configSort: [
@@ -225,7 +233,13 @@ export default {
         ],
       },
       range:null,
-      innerHTML:'【<div class="insert-tag" contenteditable="false">项目名称<i class="close el-icon-error" @click="delElClose"></i></div>】已经逾期【<div class="insert-tag" data-type="${days}" contenteditable="false">天数<i class="close el-icon-error" data-parent="normal" onclick="delElClose()"></i></div>】，请注意施工进度'
+      // 站内模板
+      stationTemplate:undefined,
+      // 短信模板
+      smsTemplate:undefined,
+      templateConditionsDays:undefined,//配置通用条件 时间
+      templateConditionsProjectName:undefined,//配置通用条件 项目名称
+      templateConditionsSubProjectName:undefined,//配置通用条件 子项目名称
     };
   },
   mounted(){
@@ -233,8 +247,11 @@ export default {
   },
   created() {
     this.getList();
-    this.getDicts("sys_normal_disable").then((response) => {
-      this.statusOptions = response.data;
+    this.getDicts("warn_type").then((response) => {
+      this.typeOptions = response.data;
+    });
+    this.getDicts("send_rang").then((response) => {
+      this.rangeOptions = response.data;
     });
   },
   methods: {
@@ -242,7 +259,7 @@ export default {
     handleAddName(){
       if(this.range){
         var span = document.createElement('span');
-        span.innerHTML='<div class="insert-tag" contenteditable="false">项目名称<i class="close el-icon-error" data-parent="normal" onclick="delElClose(this)"></i></div>'
+        span.innerHTML='<div class="insert-tag" contenteditable="false">项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>'
         this.range.insertNode(span);//在焦点插入节点
       }
     },
@@ -250,15 +267,21 @@ export default {
     handleAddDay(){
       if(this.range){
         var span = document.createElement('span');
-        span.innerHTML='<div class="insert-tag" contenteditable="false">天数<i class="close el-icon-error" data-parent="normal" onclick="delElClose(this)"></i></div>'
+        span.innerHTML='<div class="insert-tag" contenteditable="false">天数<i class="close el-icon-error" onclick="delElClose(this)"></i></div>'
+        this.range.insertNode(span);//在焦点插入节点
+      }
+    },
+    // 子项目点击
+    handleAddchild(){
+      if(this.range){
+        var span = document.createElement('span');
+        span.innerHTML='<div class="insert-tag" contenteditable="false">子项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>'
         this.range.insertNode(span);//在焦点插入节点
       }
     },
     //找到焦点位置
     getPos(event){
       this.range = window.getSelection().getRangeAt(0);
-      let a=event.currentTarget.innerHTML.replace(/项目名称/g,'${projectName}').replace(/天数/g,'${day}').replace(/<.*?>/ig,"")
-      console.log(a)
     },
     // 删除
     delElClose(){
@@ -272,29 +295,34 @@ export default {
         this.configList = response.rows;
         this.configList.forEach(item=>{
           item.edit=false;
+          item.range=this.selectDictLabel(this.rangeOptions, item.sendRange)
         })
         this.total = response.total;
         this.loading = false;
       });
     },
-    // 预警配置状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
+    // 预警配置类型字典翻译
+    typeFormat(row, column) {
+      return this.selectDictLabel(this.typeOptions, row.warnType);
+    },
+    // 预警发送范围字典翻译
+    rangeFormat(){
+      return this.selectDictLabel(this.rangeOptions, row.sendRange);
     },
     // 取消按钮
     cancel() {
       this.open = false;
-      this.reset();
+      // this.reset();
     },
     // 表单重置
     reset() {
       this.form = {
-        configId: undefined,
-        configCode: undefined,
-        configName: undefined,
-        configSort: 0,
-        status: "0",
-        remark: undefined,
+        templateId: undefined,
+        smsStatus: undefined,
+        stationStatus: undefined,
+        templateConditions:undefined,
+        stationTemplate:undefined,
+        smsTemplate:undefined,
       };
       this.resetForm("form");
     },
@@ -314,26 +342,54 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(index,row) {
+      this.templateConditionsDays=row.templateConditionsDays;
+      this.templateConditionsProjectName=row.templateConditionsProjectName;
+      this.templateConditionsSubProjectName=row.templateConditionsSubProjectName;
       if(this.configList.findIndex(e=>e.edit===true)==-1){
         this.configList[index].edit=true;
         this.$set(this.configList,index,this.configList[index]);
+        this.stationTemplate=row.stationTemplate.replace(/\$/g,'').replace(/{projectName}/g,'<div class="insert-tag" contenteditable="false">项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>').replace(/{days}/g,'<div class="insert-tag" contenteditable="false">天数<i class="close el-icon-error" onclick="delElClose(this)"></i></div>').replace(/{subProjectName}/g,'<div class="insert-tag" contenteditable="false">子项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>')
+        this.smsTemplate=row.smsTemplate.replace(/\$/g,'').replace(/{projectName}/g,'<div class="insert-tag" contenteditable="false">项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>').replace(/{days}/g,'<div class="insert-tag" contenteditable="false">天数<i class="close el-icon-error" onclick="delElClose(this)"></i></div>').replace(/{subProjectName}/g,'<div class="insert-tag" contenteditable="false">子项目名称<i class="close el-icon-error" onclick="delElClose(this)"></i></div>')
+        if(row.smsStatus==1){
+          this.$set(this.form,'smsStatus',true);
+        }else{
+          this.$set(this.form,'smsStatus',false);
+        }
+        if(row.stationStatus==1){
+          this.$set(this.form,'stationStatus',true);
+        }else{
+          this.$set(this.form,'stationStatus',false)
+        }
+        this.$set(this.form,'sendRange',row.sendRange)
       }else{
         this.msgError("请先保存或取消正在修改的预警提示");
       }
-      this.reset();
     },
     /** 提交按钮 */
     submitForm: function () {
       this.open=false;
+      this.form.smsTemplate=this.$refs.smsTemplate.innerHTML.replace(/子项目名称/g,'${subProjectName}').replace(/项目名称/g,'${projectName}').replace(/天数/g,'${day}').replace(/<.*?>/ig,"")
+      this.form.stationTemplate=this.$refs.stationTemplate.innerHTML.replace(/子项目名称/g,'${subProjectName}').replace(/项目名称/g,'${projectName}').replace(/天数/g,'${day}').replace(/<.*?>/ig,"")
     },
     // 保存
     handleSave(index,row){
-      this.form.id=row.id;
+      this.form.templateId=row.templateId;
+      if(row.smsStatus){
+        this.form.smsStatus=1
+      }else{
+        this.form.smsStatus=0
+      }
+      if(row.stationStatus){
+        this.form.stationStatus=1
+      }else{
+        this.form.stationStatus=0
+      }
       updateConfig(this.form).then((response) => {
         this.msgSuccess("修改成功");
         this.configList[index].edit=false;
         this.$set(this.configList,index,this.configList[index]);
         this.getList();
+        this.reset();
       });
     },
     // 取消
