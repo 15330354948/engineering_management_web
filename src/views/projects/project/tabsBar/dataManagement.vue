@@ -118,7 +118,7 @@
     delDataFile
   } from "@/api/projects/project";
   export default {
-    props: ["projectData","btnType"],
+    props: ["projectData", "btnType"],
     watch: {
       projectData: {
         immediate: true,
@@ -194,7 +194,8 @@
         this.loading = true;
         listDataFile(
           Object.assign(this.queryParams, {
-            dataFileId: this.dataFileId
+            dataFileId: this.dataFileId,
+            projectId: this.projectData.projectId
           })).then(res => {
           this.loading = false;
           this.total = res.total;

@@ -47,6 +47,7 @@ module.exports = {
         // target: `http://192.168.1.103:8080`,//钱尧
         target: `http://192.168.10.208:8080`,//董家明
         // target: `http://192.168.1.103:8080`,//董家明
+        target: `http://192.168.10.161:8080`,//刘小锐
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''

@@ -106,7 +106,8 @@
     </el-dialog>
 
     <!-- 创建 -->
-    <el-dialog :title="title" :visible.sync="subOpen" width="40%" append-to-body :before-close="handleClose">
+    <el-dialog :title="title" :visible.sync="subOpen" v-if="subOpen" width="40%" append-to-body
+      :before-close="handleClose">
       <el-form :model="subForm" ref="subForm" :rules="subRules" :inline="true" label-width="100px">
         <el-form-item label="子项目名称" prop="subProjectName">
           <el-input v-model="subForm.subProjectName" placeholder="请输入测点名称" clearable size="small"
@@ -126,7 +127,7 @@
         </el-form-item>
         <el-form-item label="项目地址" prop="area">
           <el-cascader style="width:45%" ref="area" v-model="subForm.area" :options="areaOptions"
-            :props="{checkStrictly: true, value: 'id'}" clearable></el-cascader>
+            :props="{ value: 'id'}" clearable></el-cascader>
           <el-input style="width:50%;margin-left: 10px" v-model="subForm.address" placeholder="详细地址" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -244,7 +245,16 @@
       // 分页查询
       getList() {
         this.loading = true;
-        listSubProject(this.queryParams).then(response => {
+        let params;
+        if (this.projectData) {
+          params = Object.assign({
+            projectId: this.projectData.projectId
+          }, this.queryParams)
+        } else {
+          params = this.queryParams
+        }
+        console.log(params);
+        listSubProject(params).then(response => {
           this.subProjectList = response.rows;
           this.total = response.total;
           this.loading = false;
@@ -377,6 +387,7 @@
       cancel() {
         this.distributionOpen = false;
         this.subOpen = false;
+        this.subForm = {}
         this.resetForm("subForm");
         this.resetForm("distributionForm");
       },

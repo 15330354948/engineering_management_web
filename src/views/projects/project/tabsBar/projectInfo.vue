@@ -54,6 +54,22 @@
             <el-input v-model="addForm.latitude" placeholder="请输入纬度" :disabled="btnType=='info'" />
           </el-form-item>
         </el-col>
+        <el-col :span="12">
+          <el-form-item label="维护负责人" prop="maintainUser">
+            <el-input v-model="addForm.maintainUser" placeholder="请输入纬度" :disabled="btnType=='info'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="远程方式" prop="remoteMode">
+            <el-input v-model="addForm.remoteMode" placeholder="请输入纬度" :disabled="btnType=='info'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="注册到期时间" prop="registrationExpiration">
+           <el-date-picker v-model="addForm.registrationExpiration" type="date" placeholder="选择日期" style="width:100%" :disabled="btnType=='info'">
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
       </el-row>
 
       <h3>项目配置</h3>
@@ -124,8 +140,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="联系方式" :prop="`list[${index}].companyPhone`">
-              <el-input v-model="addForm.list[index].companyPhone" :disabled="btnType=='info'" clearable
-                placeholder="请输入内容" />
+              <el-input v-model="addForm.list[index].companyPhone" disabled clearable placeholder="请输入内容" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -336,16 +351,17 @@
           infoProject(val.projectId).then(res => {
             let data = res.data;
             data.list.forEach(item => {
-              item.companyId /= 1
-              item.companyName /= 1
+              // Number(item.companyId)
+             item.companyName = Number(item.companyName)
             })
+            console.log(data);
+
             data.assessmentId += '';
             data.bidSection += '';
             data.watermarkId += '';
             data.period += '';
             this.addForm = data;
-            this.addForm.area = []
-            this.addForm.area.push(data.provinceCode / 1, data.cityCode / 1, data.countyCode / 1)
+            this.addForm.area = [Number(data.provinceCode), Number(data.cityCode), Number(data.countyCode)]
           })
 
         }
@@ -384,12 +400,11 @@
         getCompanyInfo(e).then(res => {
           this.addForm.list[index].companyUser = res.data.leader;
           this.addForm.list[index].companyPhone = res.data.phone;
-          this.addForm.list[index].companySupervise = res.data.createBy;
+          this.addForm.list[index].companySupervise = res.data.companySupervise;
         })
       },
       getTree() {
         getTreeselect().then(res => {
-          console.log(res);
           this.companyTree = res.data
         })
       },
