@@ -118,7 +118,7 @@
     </el-dialog>
 
     <!-- 子项查询对话框 -->
-    <el-dialog :title="title" :visible.sync="childOpen" width="70%" append-to-body>
+    <el-dialog :title="title" :visible.sync="childOpen" v-if="childOpen" width="70%" append-to-body>
       <subManagement :btnType="btnType" :projectData="projectData" ref="subManagement"></subManagement>
       <!-- <childQuery></childQuery> -->
     </el-dialog>
@@ -133,14 +133,14 @@
     <!-- 人员分配 -->
     <el-dialog :title="title" :visible.sync="personOpen" width="60%" append-to-body>
       <el-table v-loading="loading" border :data="personList">
-        <el-table-column label="单位类别" align="center" prop="category" />
-        <el-table-column label="机构名称" align="center" prop="name" />
-        <el-table-column label="审批顺序" align="center" prop="order" />
-        <el-table-column label="监督人员" align="center" prop="person">
+        <el-table-column label="单位类别" align="center" prop="companyType" :formatter="companyFormat" />
+        <el-table-column label="机构名称" align="center" prop="companyName" />
+        <!-- <el-table-column label="审批顺序" align="center" prop="order" /> -->
+        <el-table-column label="监督人员" align="center" prop="userId">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.person" placeholder="请选择创建期次" multiple clearable size="small">
-              <el-option v-for="dict in typeOptions" :key="dict.dictValue" :label="dict.dictLabel"
-                :value="dict.dictValue" />
+            <el-select v-model="scope.row.userId" placeholder="请选择创建期次" multiple clearable size="small">
+              <el-option v-for="dict in scope.row.userList" :key="dict.userId" :label="dict.userName"
+                :value="dict.userId" />
             </el-select>
           </template>
         </el-table-column>
@@ -189,7 +189,10 @@
     addProject,
     updateProject,
     exportProject,
-    getArea
+    getArea,
+    getDistribution,
+    getPerson,
+    editPerson
   } from "@/api/projects/project";
   import addForm from "./addForm.vue"
   // import childQuery from './childQuery.vue'
@@ -225,11 +228,7 @@
         // 项目表格数据
         ProjectList: [],
         // 人员分配数据
-        personList: [{
-          category: "name"
-        }, {
-          category: "name2"
-        }],
+        personList: [],
         // 弹出层标题
         title: "",
         // 是否显示弹出层
@@ -314,6 +313,9 @@
       this.getDicts("cqndt_bid_section").then(response => {
         this.bidSectionOptions = response.data;
       });
+      this.getDicts("cqndt_company_type").then(response => {
+        this.companyType = response.data
+      });
       this.getAreaList();
     },
     methods: {
@@ -340,6 +342,10 @@
       },
       bidSectionFormat(row, column) {
         return this.selectDictLabel(this.bidSectionOptions, row.bidSection);
+      },
+      // 单位类型
+      companyFormat(row) {
+        return this.selectDictLabel(this.companyType, row.companyType);
       },
       // 取消按钮
       cancel() {
@@ -407,7 +413,7 @@
         this.ids = selection.map(item => item.projectId)
         this.single = selection.length != 1
         this.multiple = !selection.length
-        
+
       },
       /** 新增按钮操作 */
       handleAdd() {
@@ -415,11 +421,12 @@
         this.getDicts("cqndt_company_type").then(response => {
           // console.log(response);
           this.companyType = response.data
-          this.$set(this.companyType[0], 'disabled', true)
+          this.$set(this.companyType[2], 'disabled', true)
           this.addOpen = true;
         });
         this.title = "添加项目";
       },
+
       /** 修改按钮操作 */
       handleUpdate(row) {
         this.projectData = row
@@ -427,17 +434,43 @@
         this.title = "编辑项目";
         this.reset();
         this.btnType = "edit";
-        // const ProjectId = row.ProjectId || this.ids
-        // getProject(ProjectId).then(response => {
-        //   this.form = response.data;
-        //   this.open = true;
-        //   this.title = "修改项目";
-        // });
       },
       // 分配按钮操作
-      handleDistribution() {
+      handleDistribution(row) {
         this.personOpen = true;
         this.title = "人员分配";
+        getDistribution(row.projectId).then(response => {
+          response.data.forEach(item => {
+            if (item.userId == "") {
+              console.log(11111);
+              item.userId = null
+            } else {
+              item.userId = item.userId.split(",")
+            }
+
+            getPerson({
+              deptId: item.companyProjectId
+            }).then(res => {
+              console.log(res.rows);
+              res.rows.forEach(it => {
+                it.userId = it.userId += ""
+              })
+              this.$set(item, 'userList', res.rows)
+              // let arr = item.userId
+              // item.userId = []
+
+              // this.$nextTick(() => {
+              //   item.userId = arr
+              // })
+
+            })
+          })
+          this.personList = response.data;
+          console.log(this.personList);
+
+
+        })
+
       },
       // 二维码下载
       QRcode(row) {
@@ -463,6 +496,7 @@
       // 子项查询
       handleChild() {
         this.reset();
+        this.projectData = null
         this.childOpen = true;
         this.title = "子项列表";
         this.btnType = "info";
@@ -475,23 +509,17 @@
       },
       /** 提交按钮 */
       submitForm: function () {
-        this.$refs["form"].validate(valid => {
-          if (valid) {
-            if (this.form.ProjectId != undefined) {
-              updateProject(this.form).then(response => {
-                this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              });
-            } else {
-              addProject(this.form).then(response => {
-                this.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              });
-            }
-          }
-        });
+        this.personList.forEach(item => {
+          item.userId = item.userId.join(',')
+          delete item.userList
+        })
+        editPerson({
+          list: this.personList
+        }).then(res => {
+          this.personOpen = true;
+          this.msgSuccess("修改成功");
+        })
+        // console.log(this.personList);
       },
       /** 删除按钮操作 */
       handleDelete(row) {
@@ -501,7 +529,8 @@
           cancelButtonText: "取消",
           type: "warning"
         }).then(function () {
-          return delProject(projectId);
+          // return delProject(projectId);
+          console.log(row);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
@@ -535,17 +564,19 @@
         // });
       },
       // 文件上传中处理
-    handleFileUploadProgress(event, file, fileList) {
-      this.upload.isUploading = true;
-    },
-    // 文件上传成功处理
-    handleFileSuccess(response, file, fileList) {
-      this.upload.open = false;
-      this.upload.isUploading = false;
-      this.$refs.upload.clearFiles();
-      this.$alert(response.msg, "导入结果", { dangerouslyUseHTMLString: true });
-      this.getList();
-    },
+      handleFileUploadProgress(event, file, fileList) {
+        this.upload.isUploading = true;
+      },
+      // 文件上传成功处理
+      handleFileSuccess(response, file, fileList) {
+        this.upload.open = false;
+        this.upload.isUploading = false;
+        this.$refs.upload.clearFiles();
+        this.$alert(response.msg, "导入结果", {
+          dangerouslyUseHTMLString: true
+        });
+        this.getList();
+      },
     }
   };
 

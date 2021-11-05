@@ -52,7 +52,7 @@
               <el-col :span="12">
                 <el-form-item label="项目地址" prop="area">
                   <el-cascader style="width:40%" v-model="addForm.area" :options="areaOptions" ref="area"
-                    :props="{ checkStrictly: true, value: 'id'}" clearable>
+                    :props="{value: 'id'}" clearable>
                   </el-cascader>
                   <el-input style="width:55%;margin-left: 10px" v-model="addForm.projectAddress" clearable
                     placeholder="详细地址" />
@@ -76,6 +76,23 @@
               <el-col :span="12">
                 <el-form-item label="纬度" prop="latitude">
                   <el-input v-model="addForm.latitude" placeholder="请输入纬度" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="维护负责人" prop="maintainUser">
+                  <el-input v-model="addForm.maintainUser" placeholder="请输入纬度" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="远程方式" prop="remoteMode">
+                  <el-input v-model="addForm.remoteMode" placeholder="请输入纬度" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="注册到期时间" prop="registrationExpiration">
+                  <el-date-picker v-model="addForm.registrationExpiration" type="date" value-format="yyyy-MM-dd"
+                    placeholder="选择日期" style="width:100%">
+                  </el-date-picker>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -135,8 +152,8 @@
               <el-row :gutter="24">
                 <el-col :span="12">
                   <el-form-item label="单位名称" :prop="`list[${index}].companyName`">
-                    <el-select v-model="addForm.list[index].companyName" clearable placeholder="请选择单位名称"
-                      style="width:100%">
+                    <el-select v-model="addForm.list[index].companyName" ref="companyRef" clearable
+                      @change="companyChange($event,index)" placeholder="请选择单位名称" style="width:100%">
                       <el-option v-for="it in companySelete(item) " :key="it.id" :label="it.label" :value="it.id">
                       </el-option>
                     </el-select>
@@ -206,7 +223,8 @@
   import {
     getArea,
     addProject,
-    getTreeselect
+    getTreeselect,
+    getCompanyInfo
   } from "@/api/projects/project";
   export default {
     directives: {
@@ -310,20 +328,6 @@
         },
         addOpen: false,
         step: 0,
-        stepOption: [{
-          value: '1',
-          label: '监理方',
-          disabled: true
-        }, {
-          value: '2',
-          label: '施工方'
-        }, {
-          value: '3',
-          label: '业主方'
-        }, {
-          value: '4',
-          label: '设计方'
-        }],
         // 项目地址
         areaOptions: [],
         // 关联水印配置
@@ -346,7 +350,7 @@
       }
     },
     created() {
-      this.addForm.stepValue.push(this.stepOption[0].value);
+      this.addForm.stepValue.push(this.companyType[2].dictValue);
       this.getAreaList();
       this.getTree();
       this.getDicts("cqndt_period").then(response => {
@@ -401,6 +405,19 @@
           this.areaOptions = res.data;
         });
       },
+
+      companyChange(e, index) {
+        console.log(this.$refs.companyRef);
+
+        this.$nextTick(() => {
+          this.addForm.list[index].companyName = this.$refs.companyRef[index].selectedLabel
+        })
+        getCompanyInfo(e).then(res => {
+          this.addForm.list[index].companyUser = res.data.leader;
+          this.addForm.list[index].companyPhone = res.data.phone;
+          this.addForm.list[index].companySupervise = res.data.createBy;
+        })
+      },
       handelChange(e) {
         // for (var i = 0; i < e.length; i++) {
         //   this.addForm.list[i].companyId = e[i]
@@ -431,7 +448,7 @@
           stepValue: [],
           list: []
         }
-        this.addForm.stepValue.push(this.stepOption[0].value)
+        this.addForm.stepValue.push(this.companyType[2].dictValue)
         this.step = 0
       },
       // 上一步
@@ -445,11 +462,14 @@
           this.addForm.list.push({
             companyId: '',
             companyName: '',
+            companyType: '',
             companyUser: '',
             companyPhone: '',
             companySupervise: '',
           })
-          this.addForm.list[i].companyId = this.addForm.stepValue[i]
+          this.addForm.list[i].companyId = this.addForm.stepValue[i];
+          this.addForm.list[i].companyType = this.addForm.stepValue[i];
+
         }
       },
       typeFormat(row) {

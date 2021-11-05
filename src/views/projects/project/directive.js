@@ -7,6 +7,7 @@ export const defaultSelect = Vue.directive('defaultSelect', {
     const indexs = []
     const tempData = values.map(a => options.find(op => op[prop] === a))
     tempData.forEach((a, index) => {
+      console.log(a);
       if (a[defaultProp] === defaultValue) indexs.push(index)
     })
     const dealStyle = function (tags) {
