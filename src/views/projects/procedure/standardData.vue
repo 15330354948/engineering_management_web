@@ -228,18 +228,42 @@ export default {
         if (valid) {
           this.form.cqndtProcedureList=this.cqndtProcedureList;
           this.form.cqndtSubStandardList=this.cqndtSubStandardList;
-          if (this.form.standardId  != undefined) {
-            updateStandard(this.form).then(response => {
-              this.msgSuccess("修改成功");
-              this.$emit('getList')
-              this.$emit("closeDialog");
-            });
-          } else {
-            addStandard(this.form).then(response => {
-              this.msgSuccess("新增成功");
-              this.$emit('getList')
-              this.$emit("closeDialog");
-            });
+          let flag,flag2;
+          if(this.form.cqndtProcedureList.length<=0){
+            return this.msgError("请添加所属工序");
+          }else if(this.form.cqndtSubStandardList.length<=0){
+            return this.msgError("请添加步骤");
+          }
+          this.form.cqndtProcedureList.forEach((item,index)=>{
+            if(!item.procedureId || !item.subProcedureId){
+              flag=false;
+              this.msgError("请完善所属工序");
+            }else{
+              flag=true
+            }
+          })
+          this.form.cqndtSubStandardList.forEach(item=>{
+            if(!item.standardRequirement || !item.subStandardName || !item.number){
+              flag2=false
+              this.msgError("请完善步骤");
+            }else{
+              flag2=true
+            }
+          })
+          if(flag && flag2){
+            if (this.form.standardId  != undefined) {
+              updateStandard(this.form).then(response => {
+                this.msgSuccess("修改成功");
+                this.$emit('getList')
+                this.$emit("closeDialog");
+              });
+            } else {
+              addStandard(this.form).then(response => {
+                this.msgSuccess("新增成功");
+                this.$emit('getList')
+                this.$emit("closeDialog");
+              });
+            }
           }
         }
       });
@@ -276,10 +300,12 @@ export default {
     // 新增规范-所属工序-工序模板切换
     handleOperation(i,e){
       this.cqndtProcedureList[i].subProcedureId=undefined;
-      getProcedure(e).then(res=>{
-        this.cqndtProcedureList[i].subProcedureList=res.data.cqndtSubProcedureList
-        this.$forceUpdate()
-      })
+      if(e){
+        getProcedure(e).then(res=>{
+          this.cqndtProcedureList[i].subProcedureList=res.data.cqndtSubProcedureList
+          this.$forceUpdate()
+        })
+      }
     },
     // 上传图片
     handleAvatarSuccess(res, file,index) {

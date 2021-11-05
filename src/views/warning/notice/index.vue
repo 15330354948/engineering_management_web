@@ -143,7 +143,7 @@
       <el-table-column label="发布范围" align="center" prop="publisheRange" :formatter="rangeFormat" />
       <el-table-column label="发布人" align="center" prop="publisher" />
       <el-table-column label="发布时间" align="center" prop="publisherTime" />
-      <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column label="备注" align="center" prop="remarks" />
       <el-table-column
         label="操作"
         align="center"
