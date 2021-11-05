@@ -44,8 +44,8 @@ module.exports = {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
         // target: `http://192.168.10.222:8081`,//曾汉鑫
-        target: `http://192.168.1.103:8080`,//钱尧
-        // target: `http://192.168.10.71:8081`,//董家明
+        // target: `http://192.168.1.103:8080`,//钱尧
+        target: `http://192.168.10.208:8080`,//董家明
         // target: `http://192.168.1.103:8080`,//董家明
         changeOrigin: true,
         pathRewrite: {

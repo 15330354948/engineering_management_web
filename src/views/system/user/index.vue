@@ -462,7 +462,8 @@ export default {
     getList() {
       this.loading = true;
       listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
-          this.userList = response.rows;
+          this.userList = response.rows.reverse();
+          console.log(this.userList)
           this.total = response.total;
           this.loading = false;
         }
